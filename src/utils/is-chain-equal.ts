@@ -1,5 +1,11 @@
 import { ChainId } from "../configs";
 import { Chain } from "../types";
+import {
+  getPubkeyFromSS58Addr,
+  isValidAddressPolkadotAddress,
+  isValidEvmAddress,
+} from "@astar-network/astar-sdk-core";
+import { evmToAddress } from "@polkadot/util-crypto";
 
 export function isChainEqual(
   c1: Chain | ChainId,
@@ -10,3 +16,16 @@ export function isChainEqual(
 
   return c1Name.toLowerCase() === c2Name.toLowerCase();
 }
+
+export const getAddress = (address: string, addressPrefix: number): string => {
+  if (isValidAddressPolkadotAddress(address)) {
+    return address;
+  } else if (isValidEvmAddress(address)) {
+    const ss58MappedAddr = evmToAddress(address, addressPrefix);
+    const hexPublicKey = getPubkeyFromSS58Addr(ss58MappedAddr);
+    return hexPublicKey;
+  } else {
+    // eslint-disable-next-line no-throw-literal
+    throw `The address ${address} is not valid.`;
+  }
+};

@@ -1,4 +1,4 @@
-import { ChainType } from "src/types";
+import { ChainType } from "../../types";
 
 const typeSubstrate: ChainType = "substrate";
 const typeEthereum: ChainType = "ethereum";
@@ -32,7 +32,7 @@ export const kusamaChains = {
     paraChainId: 2095,
     ss58Prefix: 255,
   },
-  bifrost: {
+  bifrostKusama: {
     display: "Bifrost",
     type: typeSubstrate,
     icon: "https://resources.acala.network/_next/image?url=%2Fnetworks%2Fbifrost.png&w=96&q=75",
@@ -139,6 +139,13 @@ export const kusamaChains = {
   },
   listen: {
     display: "Listen",
+    type: typeSubstrate,
+    icon: "https://resources.acala.network/_next/image?url=%2Fnetworks%2Flisten.png&w=96&q=75",
+    paraChainId: 2118,
+    ss58Prefix: 42,
+  },
+  mangata: {
+    display: "MangataX",
     type: typeSubstrate,
     icon: "https://resources.acala.network/_next/image?url=%2Fnetworks%2Flisten.png&w=96&q=75",
     paraChainId: 2118,

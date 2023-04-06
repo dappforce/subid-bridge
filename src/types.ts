@@ -26,7 +26,7 @@ export interface BasicToken {
   name: string;
   symbol: string;
   decimals: number;
-  ed: string;
+  ed?: string;
 }
 
 export interface ExpandToken extends BasicToken {

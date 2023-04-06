@@ -10,12 +10,20 @@ import { BalanceAdapter, BalanceAdapterConfigs } from "../balance-adapter";
 import { BaseCrossChainAdapter } from "../base-chain-adapter";
 import { ChainId, chains } from "../configs";
 import { ApiNotFound, TokenNotFound } from "../errors";
+import { isChainEqual } from "../utils/is-chain-equal";
 import {
   BalanceData,
   BasicToken,
   RouteConfigs,
   TransferParams,
 } from "../types";
+import {
+  polkadotXcmTransferNativeToken,
+  polkadotXcmTransferToOtherParachains,
+  polkadotXcmTransferToRelayChain,
+} from "../utils/transfers/polkadotXcm";
+
+export const ASTAR_ADDRESS_PREFIX = 5;
 
 export const astarRoutersConfig: Omit<RouteConfigs, "from">[] = [
   {
@@ -46,7 +54,15 @@ export const astarRoutersConfig: Omit<RouteConfigs, "from">[] = [
     to: "acala",
     token: "LDOT",
     xcm: {
-      fee: { token: "LDOT", amount: "31449750" },
+      fee: { token: "LDOT", amount: "`31449750`" },
+      weightLimit: "Unlimited",
+    },
+  },
+  {
+    to: "polkadot",
+    token: "DOT",
+    xcm: {
+      fee: { token: "DOT", amount: "4000000" },
       weightLimit: "Unlimited",
     },
   },
@@ -77,6 +93,7 @@ export const astarTokensConfig: Record<string, Record<string, BasicToken>> = {
     ACA: { name: "ACA", symbol: "ACA", decimals: 12, ed: "1" },
     AUSD: { name: "AUSD", symbol: "AUSD", decimals: 12, ed: "1" },
     LDOT: { name: "LDOT", symbol: "LDOT", decimals: 10, ed: "1" },
+    DOT: { name: "DOT", symbol: "DOT", decimals: 12 },
   },
   shiden: {
     SDN: { name: "SDN", symbol: "SDN", decimals: 18, ed: "1000000" },
@@ -179,7 +196,7 @@ class BaseAstarAdapter extends BaseCrossChainAdapter {
     this.balanceAdapter = new AstarBalanceAdapter({
       chain,
       api,
-      tokens: astarTokensConfig[chain],
+      tokens: this.tokens,
     });
   }
 
@@ -245,30 +262,27 @@ class BaseAstarAdapter extends BaseCrossChainAdapter {
     const { address, amount, to, token } = params;
     const toChain = chains[to];
 
-    const accountId = this.api?.createType("AccountId32", address).toHex();
-
-    const dst = {
-      parents: 1,
-      interior: { X1: { Parachain: toChain.paraChainId } },
+    const commonProps = {
+      api: this.api,
+      amount,
+      address,
     };
-    const acc = {
-      parents: 0,
-      interior: { X1: { AccountId32: { id: accountId, network: "Any" } } },
-    };
-    let ass: any = [
-      {
-        id: { Concrete: { parents: 0, interior: "Here" } },
-        fun: { Fungible: amount.toChainData() },
-      },
-    ];
 
     if (token === this.balanceAdapter?.nativeToken) {
-      return this.api?.tx.polkadotXcm.reserveTransferAssets(
-        { V1: dst },
-        { V1: acc },
-        { V1: ass },
-        0
-      );
+      return polkadotXcmTransferNativeToken({
+        ...commonProps,
+        toChain,
+      });
+    }
+
+    const tokenId = SUPPORTED_TOKENS[token];
+
+    if (isChainEqual(toChain, "polkadot")) {
+      return polkadotXcmTransferToRelayChain(commonProps);
+    }
+
+    if (tokenId === undefined) {
+      throw new TokenNotFound(token);
     }
 
     const tokenIds: Record<string, string> = {
@@ -280,32 +294,11 @@ class BaseAstarAdapter extends BaseCrossChainAdapter {
       LDOT: "0x0003",
     };
 
-    const tokenId = tokenIds[token];
-
-    if (tokenId === undefined) {
-      throw new TokenNotFound(token);
-    }
-
-    ass = [
-      {
-        id: {
-          Concrete: {
-            parents: 1,
-            interior: {
-              X2: [{ Parachain: toChain.paraChainId }, { GeneralKey: tokenId }],
-            },
-          },
-        },
-        fun: { Fungible: amount.toChainData() },
-      },
-    ];
-
-    return this.api?.tx.polkadotXcm.reserveWithdrawAssets(
-      { V1: dst },
-      { V1: acc },
-      { V1: ass },
-      0
-    );
+    return polkadotXcmTransferToOtherParachains({
+      ...commonProps,
+      toChain,
+      tokenId: tokenIds[token],
+    });
   }
 }
 

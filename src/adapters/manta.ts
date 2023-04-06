@@ -16,6 +16,13 @@ import {
   RouteConfigs,
   TransferParams,
 } from "../types";
+import { isChainEqual } from "../utils";
+import {
+  xTokensTransferToEVMChain,
+  xTokensTransferToOtherChain,
+  xTokensTransferToReleayChain,
+  xTokensTransferToStatemine,
+} from "../utils/transfers/xTokensUtils";
 
 const DEST_WEIGHT = "5000000000";
 
@@ -228,31 +235,57 @@ class BaseMantaAdapter extends BaseCrossChainAdapter {
     const { address, amount, to, token } = params;
     const toChain = chains[to];
 
-    const accountId = this.api?.createType("AccountId32", address).toHex();
-
     const tokenId = SUPPORTED_TOKENS[token];
 
     if (tokenId === undefined) {
       throw new TokenNotFound(token);
     }
 
-    return this.api?.tx.xTokens.transfer(
-      { MantaCurrency: tokenId },
-      amount.toChainData(),
-      {
-        V1: {
-          parents: 1,
-          interior: {
-            X2: [
-              { Parachain: toChain.paraChainId },
-              { AccountId32: { id: accountId, network: "Any" } },
-            ],
-          },
-        },
-      },
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      this.getDestWeight(token, to)!.toString()
-    );
+    const commonProps = {
+      api: this.api,
+      amount,
+      address,
+      tokenObj: tokenId,
+    };
+
+    if (isChainEqual(toChain, "polkadot") || isChainEqual(toChain, "kusama")) {
+      return xTokensTransferToReleayChain({
+        ...commonProps,
+      });
+    }
+
+    if (tokenId === undefined) {
+      throw new TokenNotFound(token);
+    }
+
+    if (
+      isChainEqual(toChain, "moonbeam") ||
+      isChainEqual(toChain, "moonriver")
+    ) {
+      return xTokensTransferToEVMChain({
+        ...commonProps,
+        token,
+        to,
+        getCrossChainFee: this.getCrossChainFee,
+      });
+    }
+
+    if (
+      isChainEqual(toChain, "statemine") ||
+      isChainEqual(toChain, "statemint")
+    ) {
+      return xTokensTransferToStatemine({
+        ...commonProps,
+        token,
+        to,
+        getCrossChainFee: this.getCrossChainFee,
+      });
+    }
+
+    return xTokensTransferToOtherChain({
+      ...commonProps,
+      to,
+    });
   }
 }
 

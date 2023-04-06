@@ -10,13 +10,8 @@ import { BalanceAdapter, BalanceAdapterConfigs } from "../balance-adapter";
 import { BaseCrossChainAdapter } from "../base-chain-adapter";
 import { ChainId, chains } from "../configs";
 import { ApiNotFound, TokenNotFound } from "../errors";
-import { isChainEqual } from "../utils/is-chain-equal";
-import {
-  xTokensTransferToReleayChain,
-  xTokensTransferToEVMChain,
-  xTokensTransferToOtherChain,
-  xTokensTransferToStatemine,
-} from "../utils/transfers/xTokensUtils";
+import { isChainEqual, getAddress } from "../utils/is-chain-equal";
+import { decodeAddress } from "@polkadot/util-crypto";
 import {
   BalanceData,
   BasicToken,
@@ -24,45 +19,98 @@ import {
   TransferParams,
 } from "../types";
 
-const DEST_WEIGHT = "5000000000";
+const ADDRESS_PREFIX = 56;
 
-export const kicoRoutersConfig: Omit<RouteConfigs, "from">[] = [
+export const pendulumRoutersConfig: Omit<RouteConfigs, "from">[] = [
   {
-    to: "karura",
-    token: "KICO",
+    to: "polkadot",
+    token: "DOT",
     xcm: {
-      fee: { token: "KICO", amount: "6400000000000" },
-      weightLimit: DEST_WEIGHT,
+      fee: {
+        token: "DOT",
+        amount: "408646969.884",
+      },
+      weightLimit: "Unlimited",
     },
   },
   {
-    to: "karura",
-    token: "KAR",
+    to: "acala",
+    token: "DOT",
     xcm: {
-      fee: { token: "KAR", amount: "6400000000" },
-      weightLimit: DEST_WEIGHT,
+      fee: {
+        token: "DOT",
+        amount: "2311673.7936",
+      },
+      weightLimit: "Unlimited",
     },
   },
   {
-    to: "karura",
-    token: "KUSD",
+    to: "bifrostPolkadot",
+    token: "DOT",
     xcm: {
-      fee: { token: "KUSD", amount: "10011896008" },
-      weightLimit: DEST_WEIGHT,
+      fee: {
+        token: "DOT",
+        amount: "9269600",
+      },
+      weightLimit: "Unlimited",
+    },
+  },
+  {
+    to: "hydra",
+    token: "DOT",
+    xcm: {
+      fee: {
+        token: "DOT",
+        amount: "12000000",
+      },
+      weightLimit: "Unlimited",
+    },
+  },
+  {
+    to: "interlay",
+    token: "DOT",
+    xcm: {
+      fee: {
+        token: "DOT",
+        amount: "16245354.0536",
+      },
+      weightLimit: "Unlimited",
+    },
+  },
+  {
+    to: "moonbeam",
+    token: "DOT",
+    xcm: {
+      fee: {
+        token: "DOT",
+        amount: "26455026.4544",
+      },
+      weightLimit: "Unlimited",
+    },
+  },
+  {
+    to: "parallel",
+    token: "DOT",
+    xcm: {
+      fee: {
+        token: "DOT",
+        amount: "32226877.215",
+      },
+      weightLimit: "Unlimited",
     },
   },
 ];
 
-export const kicoTokensConfig: Record<string, BasicToken> = {
-  KICO: { name: "KICO", symbol: "KICO", decimals: 14, ed: "100000000000000" },
-  KAR: { name: "KAR", symbol: "KAR", decimals: 12, ed: "0" },
-  KUSD: { name: "KUSD", symbol: "KUSD", decimals: 12, ed: "0" },
+export const pendulumTokensConfig: Record<string, BasicToken> = {
+  DOT: {
+    name: "DOT",
+    symbol: "DOT",
+    decimals: 10,
+  },
 };
 
 const SUPPORTED_TOKENS: Record<string, number> = {
-  KICO: 0,
-  KAR: 102,
-  KUSD: 10,
+  DOT: 0,
 };
 
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
@@ -83,7 +131,7 @@ const createBalanceStorages = (api: AnyApi) => {
   };
 };
 
-class KicoBalanceAdapter extends BalanceAdapter {
+class PendulumBalanceAdapter extends BalanceAdapter {
   private storages: ReturnType<typeof createBalanceStorages>;
 
   constructor({ api, chain, tokens }: BalanceAdapterConfigs) {
@@ -138,18 +186,18 @@ class KicoBalanceAdapter extends BalanceAdapter {
   }
 }
 
-class BaseKicoAdapter extends BaseCrossChainAdapter {
-  private balanceAdapter?: KicoBalanceAdapter;
+class BasePendulumAdapter extends BaseCrossChainAdapter {
+  private balanceAdapter?: PendulumBalanceAdapter;
 
   public async init(api: AnyApi) {
     this.api = api;
 
     await api.isReady;
 
-    this.balanceAdapter = new KicoBalanceAdapter({
+    this.balanceAdapter = new PendulumBalanceAdapter({
       chain: this.chain.id as ChainId,
       api,
-      tokens: kicoTokensConfig,
+      tokens: pendulumTokensConfig,
     });
   }
 
@@ -215,62 +263,51 @@ class BaseKicoAdapter extends BaseCrossChainAdapter {
     const { address, amount, to, token } = params;
     const toChain = chains[to];
 
+    const accountId = getAddress(address, ADDRESS_PREFIX);
+
     const tokenId = SUPPORTED_TOKENS[token];
 
     if (tokenId === undefined) {
       throw new TokenNotFound(token);
     }
 
-    const commonProps = {
-      api: this.api,
-      amount,
-      address,
-      tokenObj: tokenId,
+    let dst: any = {
+      V1: {
+        parents: 1,
+        interior: {
+          X2: [
+            { Parachain: toChain.paraChainId },
+            { AccountId32: { id: decodeAddress(accountId), network: "Any" } },
+          ],
+        },
+      },
     };
 
-    if (isChainEqual(toChain, "polkadot") || isChainEqual(toChain, "kusama")) {
-      return xTokensTransferToReleayChain({
-        ...commonProps,
-      });
+    if (isChainEqual(toChain, "polkadot")) {
+      dst = {
+        V1: {
+          interior: {
+            X1: {
+              AccountId32: { id: decodeAddress(accountId), network: "Any" },
+            },
+          },
+          parents: 1,
+        },
+      };
     }
 
-    if (tokenId === undefined) {
-      throw new TokenNotFound(token);
-    }
-
-    if (
-      isChainEqual(toChain, "moonbeam") ||
-      isChainEqual(toChain, "moonriver")
-    ) {
-      return xTokensTransferToEVMChain({
-        ...commonProps,
-        token,
-        to,
-        getCrossChainFee: this.getCrossChainFee,
-      });
-    }
-
-    if (
-      isChainEqual(toChain, "statemine") ||
-      isChainEqual(toChain, "statemint")
-    ) {
-      return xTokensTransferToStatemine({
-        ...commonProps,
-        token,
-        to,
-        getCrossChainFee: this.getCrossChainFee,
-      });
-    }
-
-    return xTokensTransferToOtherChain({
-      ...commonProps,
-      to,
-    });
+    return this.api.tx.xTokens.transfer(
+      { XCM: tokenId },
+      amount.toChainData(),
+      dst,
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      this.getDestWeight(token, to)!.toString()
+    );
   }
 }
 
-export class KicoAdapter extends BaseKicoAdapter {
+export class PendulumAdapter extends BasePendulumAdapter {
   constructor() {
-    super(chains.kico, kicoRoutersConfig, kicoTokensConfig);
+    super(chains.pendulum, pendulumRoutersConfig, pendulumTokensConfig);
   }
 }

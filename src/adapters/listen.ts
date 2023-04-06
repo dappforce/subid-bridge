@@ -10,12 +10,19 @@ import { BalanceAdapter, BalanceAdapterConfigs } from "../balance-adapter";
 import { BaseCrossChainAdapter } from "../base-chain-adapter";
 import { ChainId, chains } from "../configs";
 import { ApiNotFound, TokenNotFound } from "../errors";
+import { isChainEqual } from "../utils/is-chain-equal";
 import {
   BalanceData,
   BasicToken,
   RouteConfigs,
   TransferParams,
 } from "../types";
+import {
+  xTokensTransferToEVMChain,
+  xTokensTransferToOtherChain,
+  xTokensTransferToReleayChain,
+  xTokensTransferToStatemine,
+} from "../utils/transfers/xTokensUtils";
 
 const DEST_WEIGHT = "5000000000";
 
@@ -224,24 +231,52 @@ class BaseListenAdapter extends BaseCrossChainAdapter {
     }
 
     const toChain = chains[to];
-    const accountId = this.api?.createType("AccountId32", address).toHex();
-    const dst = {
-      parents: 1,
-      interior: {
-        X2: [
-          { Parachain: toChain.paraChainId },
-          { AccountId32: { id: accountId, network: "Any" } },
-        ],
-      },
+
+    const commonProps = {
+      api: this.api,
+      amount,
+      address,
+      tokenObj: tokenId,
     };
 
-    return this.api?.tx.xTokens.transfer(
-      tokenId,
-      amount.toChainData(),
-      { V1: dst },
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      this.getDestWeight(token, to)!.toString()
-    );
+    if (isChainEqual(toChain, "polkadot") || isChainEqual(toChain, "kusama")) {
+      return xTokensTransferToReleayChain({
+        ...commonProps,
+      });
+    }
+
+    if (tokenId === undefined) {
+      throw new TokenNotFound(token);
+    }
+
+    if (
+      isChainEqual(toChain, "moonbeam") ||
+      isChainEqual(toChain, "moonriver")
+    ) {
+      return xTokensTransferToEVMChain({
+        ...commonProps,
+        token,
+        to,
+        getCrossChainFee: this.getCrossChainFee,
+      });
+    }
+
+    if (
+      isChainEqual(toChain, "statemine") ||
+      isChainEqual(toChain, "statemint")
+    ) {
+      return xTokensTransferToStatemine({
+        ...commonProps,
+        token,
+        to,
+        getCrossChainFee: this.getCrossChainFee,
+      });
+    }
+
+    return xTokensTransferToOtherChain({
+      ...commonProps,
+      to,
+    });
   }
 }
 

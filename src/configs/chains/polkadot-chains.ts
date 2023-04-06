@@ -1,4 +1,4 @@
-import { ChainType } from "src/types";
+import { ChainType } from "../../types";
 
 const typeSubstrate: ChainType = "substrate";
 const typeEthereum: ChainType = "ethereum";
@@ -59,5 +59,19 @@ export const polkadotChains = {
     icon: "https://resources.acala.network/_next/image?url=%2Fnetworks%2Fhydra.png&w=96&q=75",
     paraChainId: 2034,
     ss58Prefix: 63,
+  },
+  bifrostPolkadot: {
+    display: "Bifrost",
+    type: typeSubstrate,
+    icon: "https://resources.acala.network/_next/image?url=%2Fnetworks%2Fbifrost.png&w=96&q=75",
+    paraChainId: 2001,
+    ss58Prefix: 6,
+  },
+  pendulum: {
+    display: "Pendulum",
+    type: typeSubstrate,
+    icon: "https://resources.acala.network/_next/image?url=%2Fnetworks%2Fbifrost.png&w=96&q=75",
+    paraChainId: 2094,
+    ss58Prefix: 6,
   },
 };

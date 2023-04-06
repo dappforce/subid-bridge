@@ -10,6 +10,13 @@ import { BalanceAdapter, BalanceAdapterConfigs } from "../balance-adapter";
 import { BaseCrossChainAdapter } from "../base-chain-adapter";
 import { ChainId, chains } from "../configs";
 import { ApiNotFound, TokenNotFound } from "../errors";
+import { isChainEqual } from "../utils/is-chain-equal";
+import {
+  xTokensTransferToReleayChain,
+  xTokensTransferToEVMChain,
+  xTokensTransferToStatemine,
+  xTokensTransferToOtherChain,
+} from "../utils/transfers/xTokensUtils";
 import {
   BalanceData,
   ExpandToken,
@@ -68,6 +75,83 @@ export const basiliskRoutersConfig: Omit<RouteConfigs, "from">[] = [
       weightLimit: DEST_WEIGHT,
     },
   },
+  {
+    to: "kintsugi",
+    token: "KSM",
+    xcm: {
+      fee: {
+        token: "KSM",
+        amount: "161648000",
+      },
+      weightLimit: "Unlimited",
+    },
+  },
+  {
+    to: "bifrostKusama",
+    token: "KSM",
+    xcm: {
+      fee: {
+        token: "KSM",
+        amount: "80824000",
+      },
+      weightLimit: "Unlimited",
+    },
+  },
+  {
+    to: "moonriver",
+    token: "KSM",
+    xcm: {
+      fee: {
+        token: "KSM",
+        amount: "511456628477",
+      },
+      weightLimit: "Unlimited",
+    },
+  },
+  {
+    to: "heiko",
+    token: "KSM",
+    xcm: {
+      fee: {
+        token: "KSM",
+        amount: "409165302",
+      },
+      weightLimit: "Unlimited",
+    },
+  },
+  {
+    to: "mangata",
+    token: "KSM",
+    xcm: {
+      fee: {
+        token: "KSM",
+        amount: "527700000",
+      },
+      weightLimit: "Unlimited",
+    },
+  },
+  {
+    to: "statemine",
+    token: "USDT",
+    xcm: {
+      fee: {
+        token: "USDT",
+        amount: "1366",
+      },
+      weightLimit: "Unlimited",
+    },
+  },
+  {
+    to: "moonriver",
+    token: "XRT",
+    xcm: {
+      fee: {
+        token: "XRT",
+        amount: "7092198",
+      },
+      weightLimit: "Unlimited",
+    },
+  },
 ];
 
 export const basiliskTokensConfig: Record<string, ExpandToken> = {
@@ -106,6 +190,24 @@ export const basiliskTokensConfig: Record<string, ExpandToken> = {
     ed: "10000",
     toChainData: () => 9,
   },
+  TNKR: {
+    name: "TNKR",
+    symbol: "TNKR",
+    decimals: 12,
+    toChainData: () => 3,
+  },
+  USDT: {
+    name: "USDT",
+    symbol: "USDT",
+    decimals: 6,
+    toChainData: () => 4,
+  },
+  XRT: {
+    name: "XRT",
+    symbol: "XRT",
+    decimals: 9,
+    toChainData: () => 5,
+  },
 };
 
 export const hydraRoutersConfig: Omit<RouteConfigs, "from">[] = [
@@ -117,6 +219,94 @@ export const hydraRoutersConfig: Omit<RouteConfigs, "from">[] = [
       weightLimit: DEST_WEIGHT,
     },
   },
+  {
+    to: "polkadot",
+    token: "DOT",
+    xcm: {
+      fee: {
+        token: "DOT",
+        amount: "421434140",
+      },
+      weightLimit: "Unlimited",
+    },
+  },
+  {
+    to: "acala",
+    token: "DOT",
+    xcm: {
+      fee: {
+        token: "DOT",
+        amount: "2311673",
+      },
+      weightLimit: "Unlimited",
+    },
+  },
+  {
+    to: "astar",
+    token: "DOT",
+    xcm: {
+      fee: {
+        token: "DOT",
+        amount: "4000000",
+      },
+      weightLimit: "Unlimited",
+    },
+  },
+  {
+    to: "bifrostPolkadot",
+    token: "DOT",
+    xcm: {
+      fee: {
+        token: "DOT",
+        amount: "8082400",
+      },
+      weightLimit: "Unlimited",
+    },
+  },
+  {
+    to: "interlay",
+    token: "DOT",
+    xcm: {
+      fee: {
+        token: "DOT",
+        amount: "16245354",
+      },
+      weightLimit: "Unlimited",
+    },
+  },
+  {
+    to: "moonbeam",
+    token: "DOT",
+    xcm: {
+      fee: {
+        token: "DOT",
+        amount: "26455026",
+      },
+      weightLimit: "Unlimited",
+    },
+  },
+  {
+    to: "parallel",
+    token: "DOT",
+    xcm: {
+      fee: {
+        token: "DOT",
+        amount: "32226877",
+      },
+      weightLimit: "Unlimited",
+    },
+  },
+  {
+    to: "pendulum",
+    token: "DOT",
+    xcm: {
+      fee: {
+        token: "DOT",
+        amount: "480000000",
+      },
+      weightLimit: "Unlimited",
+    },
+  },
 ];
 
 export const hydraTokensConfig: Record<string, ExpandToken> = {
@@ -126,6 +316,12 @@ export const hydraTokensConfig: Record<string, ExpandToken> = {
     decimals: 18,
     ed: "10000000000",
     toChainData: () => 2,
+  },
+  DOT: {
+    name: "DOT",
+    symbol: "DOT",
+    decimals: 10,
+    toChainData: () => 1,
   },
 };
 
@@ -281,27 +477,48 @@ class BaseHydradxAdapter extends BaseCrossChainAdapter {
     }
 
     const toChain = chains[to];
-    const accountId = this.api?.createType("AccountId32", address).toHex();
-    const dst = {
-      parents: 1,
-      interior:
-        to === "kusama" || to === "polkadot"
-          ? { X1: { AccountId32: { id: accountId, network: "Any" } } }
-          : {
-              X2: [
-                { Parachain: toChain.paraChainId },
-                { AccountId32: { id: accountId, network: "Any" } },
-              ],
-            },
+
+    const commonProps = {
+      api: this.api,
+      amount,
+      address,
+      tokenObj: token.toChainData(),
     };
 
-    return this.api?.tx.xTokens.transfer(
-      token.toChainData(),
-      amount.toChainData(),
-      { V1: dst },
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      this.getDestWeight(tokenName, to)!.toString()
-    );
+    if (isChainEqual(toChain, "polkadot") || isChainEqual(toChain, "kusama")) {
+      return xTokensTransferToReleayChain({
+        ...commonProps,
+      });
+    }
+
+    if (
+      isChainEqual(toChain, "moonbeam") ||
+      isChainEqual(toChain, "moonriver")
+    ) {
+      return xTokensTransferToEVMChain({
+        ...commonProps,
+        token: tokenName,
+        to,
+        getCrossChainFee: this.getCrossChainFee,
+      });
+    }
+
+    if (
+      isChainEqual(toChain, "statemine") ||
+      isChainEqual(toChain, "statemint")
+    ) {
+      return xTokensTransferToStatemine({
+        ...commonProps,
+        token: tokenName,
+        to,
+        getCrossChainFee: this.getCrossChainFee,
+      });
+    }
+
+    return xTokensTransferToOtherChain({
+      ...commonProps,
+      to,
+    });
   }
 }
 

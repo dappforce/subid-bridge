@@ -150,7 +150,7 @@ export abstract class BaseCrossChainAdapter {
 
     return {
       token,
-      balance: FN.fromInner(tokenConfig.ed, tokenConfig.decimals),
+      balance: FN.fromInner(tokenConfig?.ed || "0", tokenConfig.decimals),
     };
   }
 
@@ -275,7 +275,8 @@ export abstract class BaseCrossChainAdapter {
 
   public abstract subscribeTokenBalance(
     token: string,
-    address: string
+    address: string,
+    chainId?: ChainId
   ): Observable<BalanceData>;
 
   public getTokenBalance(token: string, address: string): Promise<BalanceData> {

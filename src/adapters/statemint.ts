@@ -48,6 +48,64 @@ export const statemineRoutersConfig: Omit<RouteConfigs, "from">[] = [
     token: "USDT",
     xcm: { fee: { token: "USDT", amount: "640" }, weightLimit: "Unlimited" },
   },
+  {
+    to: "moonriver",
+    token: "USDT",
+    xcm: {
+      fee: {
+        token: "USDT",
+        amount: "20000",
+      },
+      weightLimit: "Unlimited",
+    },
+  },
+  {
+    to: "bifrostKusama",
+    token: "USDT",
+    xcm: {
+      fee: {
+        token: "USDT",
+        amount: "7",
+      },
+      weightLimit: "Unlimited",
+    },
+  },
+  {
+    to: "heiko",
+    token: "USDT",
+    xcm: {
+      fee: {
+        token: "USDT",
+        amount: "18000",
+      },
+      weightLimit: "Unlimited",
+    },
+  },
+  {
+    to: "basilisk",
+    token: "USDT",
+    xcm: {
+      fee: {
+        token: "USDT",
+        amount: "2981",
+      },
+      weightLimit: "Unlimited",
+    },
+  },
+];
+
+export const statemintRoutersConfig: Omit<RouteConfigs, "from">[] = [
+  {
+    to: "polkadot",
+    token: "DOT",
+    xcm: {
+      fee: {
+        token: "DOT-Statemint",
+        amount: "421434140",
+      },
+      weightLimit: "Unlimited",
+    },
+  },
 ];
 
 export const statemineTokensConfig: Record<
@@ -60,12 +118,25 @@ export const statemineTokensConfig: Record<
     ARIS: { name: "ARIS", symbol: "ARIS", decimals: 8, ed: "10000000" },
     USDT: { name: "USDT", symbol: "USDT", decimals: 6, ed: "1000" },
   },
+  statemint: {
+    DOT: {
+      name: "DOT-Statemint",
+      symbol: "DOT-Statemint",
+      decimals: 10,
+    },
+  },
 };
 
-const SUPPORTED_TOKENS: Record<string, BN> = {
-  RMRK: new BN(8),
-  ARIS: new BN(16),
-  USDT: new BN(1984),
+const SUPPORTED_TOKENS: Record<string, Record<string, BN>> = {
+  statemine: {
+    KSM: new BN(1234),
+    RMRK: new BN(8),
+    ARIS: new BN(16),
+    USDT: new BN(1984),
+  },
+  statemint: {
+    DOT: new BN(3),
+  },
 };
 
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
@@ -108,7 +179,8 @@ class StatemintBalanceAdapter extends BalanceAdapter {
 
   public subscribeBalance(
     token: string,
-    address: string
+    address: string,
+    chainId?: ChainId
   ): Observable<BalanceData> {
     const storage = this.storages.balances(address);
 
@@ -129,7 +201,8 @@ class StatemintBalanceAdapter extends BalanceAdapter {
       );
     }
 
-    const assetId = SUPPORTED_TOKENS[token];
+    const assetId =
+      SUPPORTED_TOKENS[chainId || ("statemine" as ChainId)][token];
 
     if (assetId === undefined) {
       throw new TokenNotFound(token);
@@ -175,13 +248,14 @@ class BaseStatemintAdapter extends BaseCrossChainAdapter {
 
   public subscribeTokenBalance(
     token: string,
-    address: string
+    address: string,
+    chainId?: ChainId
   ): Observable<BalanceData> {
     if (!this.balanceAdapter) {
       throw new ApiNotFound(this.chain.id);
     }
 
-    return this.balanceAdapter.subscribeBalance(token, address);
+    return this.balanceAdapter.subscribeBalance(token, address, chainId);
   }
 
   public subscribeMaxInput(
@@ -264,8 +338,10 @@ class BaseStatemintAdapter extends BaseCrossChainAdapter {
       );
     }
 
+    const chainId = this.chain.id;
+
     // to karura/acala
-    const assetId = SUPPORTED_TOKENS[token];
+    const assetId = SUPPORTED_TOKENS[chainId][token];
 
     if (
       (to !== "acala" && to !== "karura") ||
@@ -302,6 +378,16 @@ export class StatemineAdapter extends BaseStatemintAdapter {
       chains.statemine,
       statemineRoutersConfig,
       statemineTokensConfig.statemine
+    );
+  }
+}
+
+export class StatemintAdapter extends BaseStatemintAdapter {
+  constructor() {
+    super(
+      chains.statemint,
+      statemintRoutersConfig,
+      statemineTokensConfig.statemint
     );
   }
 }

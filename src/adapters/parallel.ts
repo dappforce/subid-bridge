@@ -10,12 +10,19 @@ import { BalanceAdapter, BalanceAdapterConfigs } from "../balance-adapter";
 import { BaseCrossChainAdapter } from "../base-chain-adapter";
 import { ChainId, chains } from "../configs";
 import { ApiNotFound, TokenNotFound } from "../errors";
+import { isChainEqual } from "../utils/is-chain-equal";
 import {
   BalanceData,
   BasicToken,
   RouteConfigs,
   TransferParams,
 } from "../types";
+import {
+  xTokensTransferToEVMChain,
+  xTokensTransferToOtherChain,
+  xTokensTransferToReleayChain,
+  xTokensTransferToStatemine,
+} from "../utils/transfers/xTokensUtils";
 
 const DEST_WEIGHT = "Unlimited";
 
@@ -50,6 +57,215 @@ export const parallelRoutersConfig: Omit<RouteConfigs, "from">[] = [
     xcm: {
       fee: { token: "LDOT", amount: "24037893" },
       weightLimit: DEST_WEIGHT,
+    },
+  },
+  {
+    to: "moonbeam",
+    token: "GLMR",
+    xcm: {
+      fee: {
+        token: "GLMR",
+        amount: "4000000000000000",
+      },
+      weightLimit: "Unlimited",
+    },
+  },
+  {
+    to: "acala",
+    token: "GLMR",
+    xcm: {
+      fee: {
+        token: "GLMR",
+        amount: "8082400000000000",
+      },
+      weightLimit: "Unlimited",
+    },
+  },
+  {
+    to: "bifrostPolkadot",
+    token: "GLMR",
+    xcm: {
+      fee: {
+        token: "GLMR",
+        amount: "80824000000",
+      },
+      weightLimit: "Unlimited",
+    },
+  },
+  {
+    to: "moonbeam",
+    token: "DOT",
+    xcm: {
+      fee: {
+        token: "DOT",
+        amount: "26455026",
+      },
+      weightLimit: "Unlimited",
+    },
+  },
+  {
+    to: "polkadot",
+    token: "DOT",
+    xcm: {
+      fee: {
+        token: "DOT",
+        amount: "421434140",
+      },
+      weightLimit: "Unlimited",
+    },
+  },
+  {
+    to: "interlay",
+    token: "DOT",
+    xcm: {
+      fee: {
+        token: "DOT",
+        amount: "16245354",
+      },
+      weightLimit: "Unlimited",
+    },
+  },
+  {
+    to: "acala",
+    token: "DOT",
+    xcm: {
+      fee: {
+        token: "DOT",
+        amount: "2311673",
+      },
+      weightLimit: "Unlimited",
+    },
+  },
+  {
+    to: "astar",
+    token: "DOT",
+    xcm: {
+      fee: {
+        token: "DOT",
+        amount: "4000000",
+      },
+      weightLimit: "Unlimited",
+    },
+  },
+  {
+    to: "bifrostPolkadot",
+    token: "DOT",
+    xcm: {
+      fee: {
+        token: "DOT",
+        amount: "8082400",
+      },
+      weightLimit: "Unlimited",
+    },
+  },
+  {
+    to: "hydra",
+    token: "DOT",
+    xcm: {
+      fee: {
+        token: "DOT",
+        amount: "12000000",
+      },
+      weightLimit: "Unlimited",
+    },
+  },
+  {
+    to: "pendulum",
+    token: "DOT",
+    xcm: {
+      fee: {
+        token: "DOT",
+        amount: "480000000",
+      },
+      weightLimit: "Unlimited",
+    },
+  },
+  {
+    to: "moonbeam",
+    token: "ACA",
+    xcm: {
+      fee: {
+        token: "ACA",
+        amount: "92427848510",
+      },
+      weightLimit: "Unlimited",
+    },
+  },
+  {
+    to: "moonbeam",
+    token: "PARA",
+    xcm: {
+      fee: {
+        token: "PARA",
+        amount: "607902735562",
+      },
+      weightLimit: "Unlimited",
+    },
+  },
+  {
+    to: "interlay",
+    token: "INTR",
+    xcm: {
+      fee: {
+        token: "INTR",
+        amount: "21660472",
+      },
+      weightLimit: "Unlimited",
+    },
+  },
+  {
+    to: "acala",
+    token: "INTR",
+    xcm: {
+      fee: {
+        token: "INTR",
+        amount: "80824000",
+      },
+      weightLimit: "Unlimited",
+    },
+  },
+  {
+    to: "moonbeam",
+    token: "INTR",
+    xcm: {
+      fee: {
+        token: "INTR",
+        amount: "2823423118",
+      },
+      weightLimit: "Unlimited",
+    },
+  },
+  {
+    to: "interlay",
+    token: "IBTC",
+    xcm: {
+      fee: {
+        token: "IBTC",
+        amount: "71",
+      },
+      weightLimit: "Unlimited",
+    },
+  },
+  {
+    to: "acala",
+    token: "IBTC",
+    xcm: {
+      fee: {
+        token: "IBTC",
+        amount: "8",
+      },
+      weightLimit: "Unlimited",
+    },
+  },
+  {
+    to: "moonbeam",
+    token: "IBTC",
+    xcm: {
+      fee: {
+        token: "IBTC",
+        amount: "93",
+      },
+      weightLimit: "Unlimited",
     },
   },
 ];
@@ -87,6 +303,204 @@ export const heikoRoutersConfig: Omit<RouteConfigs, "from">[] = [
       weightLimit: DEST_WEIGHT,
     },
   },
+  {
+    to: "turing",
+    token: "HKO",
+    xcm: {
+      fee: {
+        token: "HKO",
+        amount: "19200000000",
+      },
+      weightLimit: "Unlimited",
+    },
+  },
+  {
+    to: "moonriver",
+    token: "HKO",
+    xcm: {
+      fee: {
+        token: "HKO",
+        amount: "150375939849",
+      },
+      weightLimit: "Unlimited",
+    },
+  },
+  {
+    to: "khala",
+    token: "HKO",
+    xcm: {
+      fee: {
+        token: "HKO",
+        amount: "64000000000",
+      },
+      weightLimit: "Unlimited",
+    },
+  },
+  {
+    to: "bifrostKusama",
+    token: "KAR",
+    xcm: {
+      fee: {
+        token: "KAR",
+        amount: "8082400000",
+      },
+      weightLimit: "Unlimited",
+    },
+  },
+  {
+    to: "moonriver",
+    token: "KAR",
+    xcm: {
+      fee: {
+        token: "KAR",
+        amount: "39651778084",
+      },
+      weightLimit: "Unlimited",
+    },
+  },
+  {
+    to: "turing",
+    token: "KAR",
+    xcm: {
+      fee: {
+        token: "KAR",
+        amount: "32000000000",
+      },
+      weightLimit: "Unlimited",
+    },
+  },
+  {
+    to: "kusama",
+    token: "KSM",
+    xcm: {
+      fee: {
+        token: "KSM",
+        amount: "140191500",
+      },
+      weightLimit: "Unlimited",
+    },
+  },
+  {
+    to: "moonriver",
+    token: "KSM",
+    xcm: {
+      fee: {
+        token: "KSM",
+        amount: "409165302",
+      },
+      weightLimit: "Unlimited",
+    },
+  },
+  {
+    to: "karura",
+    token: "KSM",
+    xcm: {
+      fee: {
+        token: "KSM",
+        amount: "57160209",
+      },
+      weightLimit: "Unlimited",
+    },
+  },
+  {
+    to: "kintsugi",
+    token: "KSM",
+    xcm: {
+      fee: {
+        token: "KSM",
+        amount: "161648000",
+      },
+      weightLimit: "Unlimited",
+    },
+  },
+  {
+    to: "bifrostKusama",
+    token: "KSM",
+    xcm: {
+      fee: {
+        token: "KSM",
+        amount: "80824000",
+      },
+      weightLimit: "Unlimited",
+    },
+  },
+  {
+    to: "mangata",
+    token: "KSM",
+    xcm: {
+      fee: {
+        token: "KSM",
+        amount: "527700000",
+      },
+      weightLimit: "Unlimited",
+    },
+  },
+  {
+    to: "basilisk",
+    token: "KSM",
+    xcm: {
+      fee: {
+        token: "KSM",
+        amount: "101577722",
+      },
+      weightLimit: "Unlimited",
+    },
+  },
+  {
+    to: "moonriver",
+    token: "MOVR",
+    xcm: {
+      fee: {
+        token: "MOVR",
+        amount: "40000000000000",
+      },
+      weightLimit: "Unlimited",
+    },
+  },
+  {
+    to: "bifrostKusama",
+    token: "MOVR",
+    xcm: {
+      fee: {
+        token: "MOVR",
+        amount: "215800080000000",
+      },
+      weightLimit: "Unlimited",
+    },
+  },
+  {
+    to: "karura",
+    token: "MOVR",
+    xcm: {
+      fee: {
+        token: "MOVR",
+        amount: "101030000000000000",
+      },
+      weightLimit: "Unlimited",
+    },
+  },
+  {
+    to: "khala",
+    token: "MOVR",
+    xcm: {
+      fee: {
+        token: "MOVR",
+        amount: "80824000000000",
+      },
+      weightLimit: "Unlimited",
+    },
+  },
+  {
+    to: "statemine",
+    token: "USDT",
+    xcm: {
+      fee: {
+        token: "USDT",
+        amount: "1366",
+      },
+      weightLimit: "Unlimited",
+    },
+  },
 ];
 
 export const parallelTokensConfig: Record<
@@ -98,12 +512,49 @@ export const parallelTokensConfig: Record<
     ACA: { name: "ACA", symbol: "ACA", decimals: 12, ed: "100000000000" },
     AUSD: { name: "AUSD", symbol: "AUSD", decimals: 12, ed: "100000000000" },
     LDOT: { name: "LDOT", symbol: "LDOT", decimals: 10, ed: "500000000" },
+    GLMR: {
+      name: "GLMR",
+      symbol: "GLMR",
+      decimals: 18,
+    },
+    DOT: {
+      name: "DOT",
+      symbol: "DOT",
+      decimals: 10,
+    },
+    INTR: {
+      name: "INTR",
+      symbol: "INTR",
+      decimals: 10,
+      ed: "0",
+    },
+    IBTC: {
+      name: "IBTC",
+      symbol: "IBTC",
+      decimals: 8,
+      ed: "0",
+    },
   },
   heiko: {
     HKO: { name: "HKO", symbol: "HKO", decimals: 12, ed: "100000000000" },
     KAR: { name: "KAR", symbol: "KAR", decimals: 12, ed: "0" },
     KUSD: { name: "KUSD", symbol: "KUSD", decimals: 12, ed: "0" },
     LKSM: { name: "LKSM", symbol: "LKSM", decimals: 12, ed: "0" },
+    KSM: {
+      name: "KSM",
+      symbol: "KSM",
+      decimals: 12,
+    },
+    MOVR: {
+      name: "MOVR",
+      symbol: "MOVR",
+      decimals: 18,
+    },
+    USDT: {
+      name: "USDT",
+      symbol: "USDT",
+      decimals: 6,
+    },
   },
 };
 
@@ -116,6 +567,13 @@ const SUPPORTED_TOKENS: Record<string, number> = {
   ACA: 108,
   AUSD: 104,
   LDOT: 110,
+  DOT: 101,
+  GLMR: 114,
+  INTR: 120,
+  IBTC: 122,
+  KSM: 100,
+  MOVR: 113,
+  USDT: 102,
 };
 
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
@@ -270,38 +728,57 @@ class BaseParallelAdapter extends BaseCrossChainAdapter {
     const { address, amount, to, token } = params;
     const toChain = chains[to];
 
-    const accountId = this.api?.createType("AccountId32", address).toHex();
-
     const tokenId = SUPPORTED_TOKENS[token];
 
     if (tokenId === undefined) {
       throw new TokenNotFound(token);
     }
 
-    const useNewDestWeight =
-      this.api.tx.xTokens.transfer.meta.args[3].type.toString() ===
-      "XcmV2WeightLimit";
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const oldDestWeight = this.getDestWeight(token, to)!.toString();
-    const destWeight = useNewDestWeight ? "Unlimited" : oldDestWeight;
+    const commonProps = {
+      api: this.api,
+      amount,
+      address,
+      tokenObj: tokenId,
+    };
 
-    return this.api.tx.xTokens.transfer(
-      tokenId,
-      amount.toChainData(),
-      {
-        V1: {
-          parents: 1,
-          interior: {
-            X2: [
-              { Parachain: toChain.paraChainId },
-              { AccountId32: { id: accountId, network: "Any" } },
-            ],
-          },
-        },
-      },
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      destWeight
-    );
+    if (isChainEqual(toChain, "polkadot") || isChainEqual(toChain, "kusama")) {
+      return xTokensTransferToReleayChain({
+        ...commonProps,
+      });
+    }
+
+    if (tokenId === undefined) {
+      throw new TokenNotFound(token);
+    }
+
+    if (
+      isChainEqual(toChain, "moonbeam") ||
+      isChainEqual(toChain, "moonriver")
+    ) {
+      return xTokensTransferToEVMChain({
+        ...commonProps,
+        token,
+        to,
+        getCrossChainFee: this.getCrossChainFee,
+      });
+    }
+
+    if (
+      isChainEqual(toChain, "statemine") ||
+      isChainEqual(toChain, "statemint")
+    ) {
+      return xTokensTransferToStatemine({
+        ...commonProps,
+        token,
+        to,
+        getCrossChainFee: this.getCrossChainFee,
+      });
+    }
+
+    return xTokensTransferToOtherChain({
+      ...commonProps,
+      to,
+    });
   }
 }
 
