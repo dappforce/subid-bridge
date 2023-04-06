@@ -5476,9 +5476,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@subsocial/bridge@workspace:.":
+"@subid/bridge@workspace:.":
   version: 0.0.0-use.local
-  resolution: "@subsocial/bridge@workspace:."
+  resolution: "@subid/bridge@workspace:."
   dependencies:
     "@acala-network/api": 4.1.8-7
     "@acala-network/sdk": 4.1.8-7

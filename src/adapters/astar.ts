@@ -19,6 +19,7 @@ import {
 } from "../types";
 import {
   polkadotXcmTransferNativeToken,
+  polkadotXcmTransferToOtherParachains,
   polkadotXcmTransferToRelayChain,
 } from "../utils/transfers/polkadotXcm";
 
@@ -284,9 +285,19 @@ class BaseAstarAdapter extends BaseCrossChainAdapter {
       throw new TokenNotFound(token);
     }
 
-    return polkadotXcmTransferNativeToken({
+    const tokenIds: Record<string, string> = {
+      // to karura
+      KUSD: "0x0081",
+      // to acala
+      ACA: "0x0000",
+      AUSD: "0x0001",
+      LDOT: "0x0003",
+    };
+
+    return polkadotXcmTransferToOtherParachains({
       ...commonProps,
       toChain,
+      tokenId: tokenIds[token],
     });
   }
 }

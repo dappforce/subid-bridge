@@ -785,6 +785,7 @@ class BaseMoonbeamAdapter extends BaseCrossChainAdapter {
     return polkadotXcmTransferToOtherParachains({
       ...commonProps,
       toChain,
+      tokenId,
     });
   }
 }

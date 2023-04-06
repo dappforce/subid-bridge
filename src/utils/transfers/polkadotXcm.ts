@@ -52,12 +52,17 @@ export const polkadotXcmTransferToRelayChain = ({
   );
 };
 
+type TransferToOtherChain = TransferProps & {
+  tokenId: string;
+};
+
 export const polkadotXcmTransferToOtherParachains = ({
   api,
   amount,
   address,
   toChain,
-}: TransferProps) => {
+  tokenId,
+}: TransferToOtherChain) => {
   const accountId = api?.createType("AccountId32", address).toHex();
 
   const dst = {
@@ -78,7 +83,14 @@ export const polkadotXcmTransferToOtherParachains = ({
 
   const ass = [
     {
-      id: { Concrete: { parents: 0, interior: "Here" } },
+      id: {
+        Concrete: {
+          parents: 1,
+          interior: {
+            X2: [{ Parachain: toChain.paraChainId }, { GeneralKey: tokenId }],
+          },
+        },
+      },
       fun: { Fungible: amount.toChainData() },
     },
   ];
@@ -101,7 +113,7 @@ export const polkadotXcmTransferNativeToken = ({
 
   const dst = {
     interior: { X1: { ParaChain: toChain.paraChainId } },
-    parents: 0,
+    parents: 1,
   };
   const acc = {
     interior: {

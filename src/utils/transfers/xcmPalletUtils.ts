@@ -21,6 +21,7 @@ export const xcmPalletTransferToStatemine = ({
     parents: 0,
   };
   const acc = {
+    parents: 0,
     interior: {
       X1: {
         AccountId32: {
@@ -29,7 +30,6 @@ export const xcmPalletTransferToStatemine = ({
         },
       },
     },
-    parents: 0,
   };
   const ass = [
     {
