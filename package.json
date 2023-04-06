@@ -1,5 +1,5 @@
 {
-  "name": "@subsocial/bridge",
+  "name": "@subid/bridge",
   "version": "0.0.1",
   "description": "polkawallet bridge sdk",
   "main": "index.js",
