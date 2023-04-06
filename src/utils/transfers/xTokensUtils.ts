@@ -9,7 +9,7 @@ type TransferProps = {
   tokenObj?: any;
 };
 
-export const transferToReleayChain = ({
+export const xTokensTransferToReleayChain = ({
   api,
   amount,
   address,
@@ -36,7 +36,7 @@ type TransferToEVMProps = TransferProps & {
   getCrossChainFee: (token: string, to: ChainId) => TokenBalance;
 };
 
-export const transferToEVMChain = ({
+export const xTokensTransferToEVMChain = ({
   api,
   amount,
   address,
@@ -86,7 +86,7 @@ type TransferToOtherProps = TransferProps & {
   to: ChainId;
 };
 
-export const transferToOtherParachains = ({
+export const xTokensTransferToOtherChain = ({
   api,
   amount,
   to,
@@ -120,7 +120,7 @@ type TransferToStatemineProps = TransferProps & {
   getCrossChainFee: (token: string, to: ChainId) => TokenBalance;
 };
 
-export const transferToStatemine = ({
+export const xTokensTransferToStatemine = ({
   api,
   amount,
   to,

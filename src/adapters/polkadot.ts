@@ -12,9 +12,9 @@ import { ChainId, chains } from "../configs";
 import { ApiNotFound, TokenNotFound } from "../errors";
 import { isChainEqual } from "../utils/is-chain-equal";
 import {
-  transferToStatemine,
-  transferToEVM,
-  transferToOther,
+  xcmPalletTransferToStatemine,
+  xcmPalletTransferToEVMChain,
+  xcmPalletTransferToOtherChain,
 } from "../utils/transfers/xcmPalletUtils";
 import {
   BalanceData,
@@ -394,18 +394,18 @@ class BasePolkadotAdapter extends BaseCrossChainAdapter {
 
     // to statemine
     if (to === "statemine" || to === "statemint") {
-      return transferToStatemine(commonProps);
+      return xcmPalletTransferToStatemine(commonProps);
     }
 
     if (
       isChainEqual(toChain, "moonbeam") ||
       isChainEqual(toChain, "moonriver")
     ) {
-      return transferToEVM(commonProps);
+      return xcmPalletTransferToEVMChain(commonProps);
     }
 
     if (isV0V1Support) {
-      return transferToOther(commonProps);
+      return xcmPalletTransferToOtherChain(commonProps);
     } else {
       const dst = {
         parents: 0,

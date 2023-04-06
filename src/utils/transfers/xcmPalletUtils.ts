@@ -8,7 +8,7 @@ type TransferProps = {
   toChain: Chain;
 };
 
-export const transferToStatemine = ({
+export const xcmPalletTransferToStatemine = ({
   api,
   address,
   amount,
@@ -47,7 +47,7 @@ export const transferToStatemine = ({
   );
 };
 
-export const transferToOther = ({
+export const xcmPalletTransferToOtherChain = ({
   api,
   amount,
   address,
@@ -69,7 +69,7 @@ export const transferToOther = ({
   );
 };
 
-export const transferToEVM = ({
+export const xcmPalletTransferToEVMChain = ({
   api,
   amount,
   toChain,

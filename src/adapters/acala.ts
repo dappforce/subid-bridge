@@ -25,10 +25,10 @@ import {
 } from "../types";
 import { isChainEqual } from "../utils/is-chain-equal";
 import {
-  transferToEVMChain,
-  transferToOtherParachains,
-  transferToReleayChain,
-  transferToStatemine,
+  xTokensTransferToEVMChain,
+  xTokensTransferToOtherChain,
+  xTokensTransferToReleayChain,
+  xTokensTransferToStatemine,
 } from "../utils/transfers/xTokensUtils";
 
 const ACALA_DEST_WEIGHT = "5000000000";
@@ -1103,7 +1103,7 @@ class BaseAcalaAdapter extends BaseCrossChainAdapter {
       isChainEqual(toChain, "moonriver") ||
       isChainEqual(toChain, "moonbeam")
     ) {
-      return transferToEVMChain({
+      return xTokensTransferToEVMChain({
         ...commonParams,
         getCrossChainFee: this.getCrossChainFee,
         token,
@@ -1113,18 +1113,18 @@ class BaseAcalaAdapter extends BaseCrossChainAdapter {
 
     // to relay-chain
     if (isChainEqual(toChain, "kusama") || isChainEqual(toChain, "polkadot")) {
-      return transferToReleayChain({ ...commonParams });
+      return xTokensTransferToReleayChain({ ...commonParams });
     }
 
     return isChainEqual(toChain, "statemine") ||
       isChainEqual(toChain, "statemint")
-      ? transferToStatemine({
+      ? xTokensTransferToStatemine({
           ...commonParams,
           getCrossChainFee: this.getCrossChainFee,
           token,
           to,
         })
-      : transferToOtherParachains({
+      : xTokensTransferToOtherChain({
           ...commonParams,
           to,
         });

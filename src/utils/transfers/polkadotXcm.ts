@@ -8,7 +8,7 @@ type TransferProps = {
   toChain: Chain;
 };
 
-export const transferToRelayChain = ({
+export const polkadotXcmTransferToRelayChain = ({
   api,
   amount,
   address,
@@ -52,7 +52,7 @@ export const transferToRelayChain = ({
   );
 };
 
-export const transferToOtherParachains = ({
+export const polkadotXcmTransferToOtherParachains = ({
   api,
   amount,
   address,
@@ -91,7 +91,7 @@ export const transferToOtherParachains = ({
   );
 };
 
-export const transferNativeToken = ({
+export const polkadotXcmTransferNativeToken = ({
   api,
   toChain,
   address,

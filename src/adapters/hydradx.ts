@@ -12,10 +12,10 @@ import { ChainId, chains } from "../configs";
 import { ApiNotFound, TokenNotFound } from "../errors";
 import { isChainEqual } from "../utils/is-chain-equal";
 import {
-  transferToReleayChain,
-  transferToEVMChain,
-  transferToStatemine,
-  transferToOtherParachains,
+  xTokensTransferToReleayChain,
+  xTokensTransferToEVMChain,
+  xTokensTransferToStatemine,
+  xTokensTransferToOtherChain,
 } from "../utils/transfers/xTokensUtils";
 import {
   BalanceData,
@@ -486,7 +486,7 @@ class BaseHydradxAdapter extends BaseCrossChainAdapter {
     };
 
     if (isChainEqual(toChain, "polkadot") || isChainEqual(toChain, "kusama")) {
-      return transferToReleayChain({
+      return xTokensTransferToReleayChain({
         ...commonProps,
       });
     }
@@ -495,7 +495,7 @@ class BaseHydradxAdapter extends BaseCrossChainAdapter {
       isChainEqual(toChain, "moonbeam") ||
       isChainEqual(toChain, "moonriver")
     ) {
-      return transferToEVMChain({
+      return xTokensTransferToEVMChain({
         ...commonProps,
         token: tokenName,
         to,
@@ -507,7 +507,7 @@ class BaseHydradxAdapter extends BaseCrossChainAdapter {
       isChainEqual(toChain, "statemine") ||
       isChainEqual(toChain, "statemint")
     ) {
-      return transferToStatemine({
+      return xTokensTransferToStatemine({
         ...commonProps,
         token: tokenName,
         to,
@@ -515,7 +515,7 @@ class BaseHydradxAdapter extends BaseCrossChainAdapter {
       });
     }
 
-    return transferToOtherParachains({
+    return xTokensTransferToOtherChain({
       ...commonProps,
       to,
     });

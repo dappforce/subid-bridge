@@ -11,10 +11,10 @@ import { BaseCrossChainAdapter } from "../base-chain-adapter";
 import { ChainId, chains } from "../configs";
 import { ApiNotFound, TokenNotFound } from "../errors";
 import {
-  transferToReleayChain,
-  transferToEVMChain,
-  transferToStatemine,
-  transferToOtherParachains,
+  xTokensTransferToReleayChain,
+  xTokensTransferToEVMChain,
+  xTokensTransferToStatemine,
+  xTokensTransferToOtherChain,
 } from "../utils/transfers/xTokensUtils";
 import { isChainEqual } from "../utils/is-chain-equal";
 import {
@@ -323,7 +323,7 @@ class BaseOakAdapter extends BaseCrossChainAdapter {
     };
 
     if (isChainEqual(toChain, "polkadot") || isChainEqual(toChain, "kusama")) {
-      return transferToReleayChain({
+      return xTokensTransferToReleayChain({
         ...commonProps,
       });
     }
@@ -336,7 +336,7 @@ class BaseOakAdapter extends BaseCrossChainAdapter {
       isChainEqual(toChain, "moonbeam") ||
       isChainEqual(toChain, "moonriver")
     ) {
-      return transferToEVMChain({
+      return xTokensTransferToEVMChain({
         ...commonProps,
         token,
         to,
@@ -348,7 +348,7 @@ class BaseOakAdapter extends BaseCrossChainAdapter {
       isChainEqual(toChain, "statemine") ||
       isChainEqual(toChain, "statemint")
     ) {
-      return transferToStatemine({
+      return xTokensTransferToStatemine({
         ...commonProps,
         token,
         to,
@@ -356,7 +356,7 @@ class BaseOakAdapter extends BaseCrossChainAdapter {
       });
     }
 
-    return transferToOtherParachains({
+    return xTokensTransferToOtherChain({
       ...commonProps,
       to,
     });

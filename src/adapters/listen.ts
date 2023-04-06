@@ -18,10 +18,10 @@ import {
   TransferParams,
 } from "../types";
 import {
-  transferToEVMChain,
-  transferToOtherParachains,
-  transferToReleayChain,
-  transferToStatemine,
+  xTokensTransferToEVMChain,
+  xTokensTransferToOtherChain,
+  xTokensTransferToReleayChain,
+  xTokensTransferToStatemine,
 } from "../utils/transfers/xTokensUtils";
 
 const DEST_WEIGHT = "5000000000";
@@ -240,7 +240,7 @@ class BaseListenAdapter extends BaseCrossChainAdapter {
     };
 
     if (isChainEqual(toChain, "polkadot") || isChainEqual(toChain, "kusama")) {
-      return transferToReleayChain({
+      return xTokensTransferToReleayChain({
         ...commonProps,
       });
     }
@@ -253,7 +253,7 @@ class BaseListenAdapter extends BaseCrossChainAdapter {
       isChainEqual(toChain, "moonbeam") ||
       isChainEqual(toChain, "moonriver")
     ) {
-      return transferToEVMChain({
+      return xTokensTransferToEVMChain({
         ...commonProps,
         token,
         to,
@@ -265,7 +265,7 @@ class BaseListenAdapter extends BaseCrossChainAdapter {
       isChainEqual(toChain, "statemine") ||
       isChainEqual(toChain, "statemint")
     ) {
-      return transferToStatemine({
+      return xTokensTransferToStatemine({
         ...commonProps,
         token,
         to,
@@ -273,7 +273,7 @@ class BaseListenAdapter extends BaseCrossChainAdapter {
       });
     }
 
-    return transferToOtherParachains({
+    return xTokensTransferToOtherChain({
       ...commonProps,
       to,
     });

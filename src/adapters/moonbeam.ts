@@ -12,9 +12,9 @@ import { ChainId, chains } from "../configs";
 import { ApiNotFound, TokenNotFound } from "../errors";
 import { isChainEqual } from "../utils/is-chain-equal";
 import {
-  transferNativeToken,
-  transferToRelayChain,
-  transferToOtherParachains,
+  polkadotXcmTransferNativeToken,
+  polkadotXcmTransferToRelayChain,
+  polkadotXcmTransferToOtherParachains,
 } from "../utils/transfers/polkadotXcm";
 import {
   BalanceData,
@@ -766,7 +766,7 @@ class BaseMoonbeamAdapter extends BaseCrossChainAdapter {
     };
 
     if (token === this.balanceAdapter?.nativeToken) {
-      return transferNativeToken({
+      return polkadotXcmTransferNativeToken({
         ...commonProps,
         toChain,
       });
@@ -775,14 +775,14 @@ class BaseMoonbeamAdapter extends BaseCrossChainAdapter {
     const tokenId = SUPPORTED_TOKENS[chainId][token];
 
     if (isChainEqual(toChain, "polkadot")) {
-      return transferToRelayChain(commonProps);
+      return polkadotXcmTransferToRelayChain(commonProps);
     }
 
     if (tokenId === undefined) {
       throw new TokenNotFound(token);
     }
 
-    return transferToOtherParachains({
+    return polkadotXcmTransferToOtherParachains({
       ...commonProps,
       toChain,
     });

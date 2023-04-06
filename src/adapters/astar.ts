@@ -18,8 +18,8 @@ import {
   TransferParams,
 } from "../types";
 import {
-  transferNativeToken,
-  transferToRelayChain,
+  polkadotXcmTransferNativeToken,
+  polkadotXcmTransferToRelayChain,
 } from "../utils/transfers/polkadotXcm";
 
 export const ASTAR_ADDRESS_PREFIX = 5;
@@ -268,7 +268,7 @@ class BaseAstarAdapter extends BaseCrossChainAdapter {
     };
 
     if (token === this.balanceAdapter?.nativeToken) {
-      return transferNativeToken({
+      return polkadotXcmTransferNativeToken({
         ...commonProps,
         toChain,
       });
@@ -277,14 +277,14 @@ class BaseAstarAdapter extends BaseCrossChainAdapter {
     const tokenId = SUPPORTED_TOKENS[token];
 
     if (isChainEqual(toChain, "polkadot")) {
-      return transferToRelayChain(commonProps);
+      return polkadotXcmTransferToRelayChain(commonProps);
     }
 
     if (tokenId === undefined) {
       throw new TokenNotFound(token);
     }
 
-    return transferNativeToken({
+    return polkadotXcmTransferNativeToken({
       ...commonProps,
       toChain,
     });

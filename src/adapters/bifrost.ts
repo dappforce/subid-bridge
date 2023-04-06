@@ -11,10 +11,10 @@ import { ChainId, chains } from "../configs";
 import { ApiNotFound, TokenNotFound } from "../errors";
 import { isChainEqual } from "../utils/is-chain-equal";
 import {
-  transferToStatemine,
-  transferToOtherParachains,
-  transferToReleayChain,
-  transferToEVMChain,
+  xTokensTransferToStatemine,
+  xTokensTransferToOtherChain,
+  xTokensTransferToReleayChain,
+  xTokensTransferToEVMChain,
 } from "../utils/transfers/xTokensUtils";
 import {
   BalanceData,
@@ -537,7 +537,7 @@ class BaseBifrostAdapter extends BaseCrossChainAdapter {
     };
 
     if (isChainEqual(toChain, "polkadot") || isChainEqual(toChain, "kusama")) {
-      return transferToReleayChain({
+      return xTokensTransferToReleayChain({
         ...commonProps,
       });
     }
@@ -550,7 +550,7 @@ class BaseBifrostAdapter extends BaseCrossChainAdapter {
       isChainEqual(toChain, "moonbeam") ||
       isChainEqual(toChain, "moonriver")
     ) {
-      return transferToEVMChain({
+      return xTokensTransferToEVMChain({
         ...commonProps,
         token,
         to,
@@ -562,7 +562,7 @@ class BaseBifrostAdapter extends BaseCrossChainAdapter {
       isChainEqual(toChain, "statemine") ||
       isChainEqual(toChain, "statemint")
     ) {
-      return transferToStatemine({
+      return xTokensTransferToStatemine({
         ...commonProps,
         token,
         to,
@@ -570,7 +570,7 @@ class BaseBifrostAdapter extends BaseCrossChainAdapter {
       });
     }
 
-    return transferToOtherParachains({
+    return xTokensTransferToOtherChain({
       ...commonProps,
       to,
     });

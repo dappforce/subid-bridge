@@ -12,10 +12,10 @@ import { ChainId, chains } from "../configs";
 import { ApiNotFound, TokenNotFound } from "../errors";
 import { isChainEqual } from "../utils/is-chain-equal";
 import {
-  transferToReleayChain,
-  transferToEVMChain,
-  transferToOtherParachains,
-  transferToStatemine,
+  xTokensTransferToReleayChain,
+  xTokensTransferToEVMChain,
+  xTokensTransferToOtherChain,
+  xTokensTransferToStatemine,
 } from "../utils/transfers/xTokensUtils";
 import {
   BalanceData,
@@ -229,7 +229,7 @@ class BaseKicoAdapter extends BaseCrossChainAdapter {
     };
 
     if (isChainEqual(toChain, "polkadot") || isChainEqual(toChain, "kusama")) {
-      return transferToReleayChain({
+      return xTokensTransferToReleayChain({
         ...commonProps,
       });
     }
@@ -242,7 +242,7 @@ class BaseKicoAdapter extends BaseCrossChainAdapter {
       isChainEqual(toChain, "moonbeam") ||
       isChainEqual(toChain, "moonriver")
     ) {
-      return transferToEVMChain({
+      return xTokensTransferToEVMChain({
         ...commonProps,
         token,
         to,
@@ -254,7 +254,7 @@ class BaseKicoAdapter extends BaseCrossChainAdapter {
       isChainEqual(toChain, "statemine") ||
       isChainEqual(toChain, "statemint")
     ) {
-      return transferToStatemine({
+      return xTokensTransferToStatemine({
         ...commonProps,
         token,
         to,
@@ -262,7 +262,7 @@ class BaseKicoAdapter extends BaseCrossChainAdapter {
       });
     }
 
-    return transferToOtherParachains({
+    return xTokensTransferToOtherChain({
       ...commonProps,
       to,
     });
