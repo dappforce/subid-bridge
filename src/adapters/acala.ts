@@ -24,6 +24,12 @@ import {
   TransferParams,
 } from "../types";
 import { isChainEqual } from "../utils/is-chain-equal";
+import {
+  transferToEVMChain,
+  transferToOtherParachains,
+  transferToReleayChain,
+  transferToStatemine,
+} from "../utils/transfers/xTokensUtils";
 
 const ACALA_DEST_WEIGHT = "5000000000";
 
@@ -57,14 +63,6 @@ export const acalaRoutersConfig: Omit<RouteConfigs, "from">[] = [
     token: "AUSD",
     xcm: {
       fee: { token: "AUSD", amount: "2000000000" },
-      weightLimit: ACALA_DEST_WEIGHT,
-    },
-  },
-  {
-    to: "moonbeam",
-    token: "DOT",
-    xcm: {
-      fee: { token: "DOT", amount: "447889166" },
       weightLimit: ACALA_DEST_WEIGHT,
     },
   },
@@ -156,8 +154,150 @@ export const acalaRoutersConfig: Omit<RouteConfigs, "from">[] = [
       weightLimit: ACALA_DEST_WEIGHT,
     },
   },
+  {
+    to: "moonbeam",
+    token: "INTR",
+    xcm: {
+      fee: {
+        token: "INTR",
+        amount: "2823423118",
+      },
+      weightLimit: "Unlimited",
+    },
+  },
+  {
+    to: "parallel",
+    token: "INTR",
+    xcm: {
+      fee: {
+        token: "INTR",
+        amount: "6535947712",
+      },
+      weightLimit: "Unlimited",
+    },
+  },
+  {
+    to: "moonbeam",
+    token: "IBTC",
+    xcm: {
+      fee: {
+        token: "IBTC",
+        amount: "93",
+      },
+      weightLimit: "Unlimited",
+    },
+  },
+  {
+    to: "parallel",
+    token: "IBTC",
+    xcm: {
+      fee: {
+        token: "IBTC",
+        amount: "103",
+      },
+      weightLimit: "Unlimited",
+    },
+  },
+  {
+    to: "interlay",
+    token: "DOT",
+    xcm: {
+      fee: {
+        token: "DOT",
+        amount: "16245354",
+      },
+      weightLimit: "Unlimited",
+    },
+  },
+  {
+    to: "parallel",
+    token: "DOT",
+    xcm: {
+      fee: {
+        token: "DOT",
+        amount: "32226877",
+      },
+      weightLimit: "Unlimited",
+    },
+  },
+  {
+    to: "moonbeam",
+    token: "DOT",
+    xcm: {
+      fee: {
+        token: "DOT",
+        amount: "26455026",
+      },
+      weightLimit: "Unlimited",
+    },
+  },
+  {
+    to: "astar",
+    token: "DOT",
+    xcm: {
+      fee: {
+        token: "DOT",
+        amount: "4000000",
+      },
+      weightLimit: "Unlimited",
+    },
+  },
+  {
+    to: "bifrostPolkadot",
+    token: "DOT",
+    xcm: {
+      fee: {
+        token: "DOT",
+        amount: "8082400",
+      },
+      weightLimit: "Unlimited",
+    },
+  },
+  {
+    to: "hydra",
+    token: "DOT",
+    xcm: {
+      fee: {
+        token: "DOT",
+        amount: "12000000",
+      },
+      weightLimit: "Unlimited",
+    },
+  },
+  {
+    to: "pendulum",
+    token: "DOT",
+    xcm: {
+      fee: {
+        token: "DOT",
+        amount: "480000000",
+      },
+      weightLimit: "Unlimited",
+    },
+  },
+  {
+    to: "bifrostPolkadot",
+    token: "GLMR",
+    xcm: {
+      fee: {
+        token: "GLMR",
+        amount: "80824000000",
+      },
+      weightLimit: "Unlimited",
+    },
+  },
+  {
+    to: "parallel",
+    token: "GLMR",
+    xcm: {
+      fee: {
+        token: "GLMR",
+        amount: "44033465433729636",
+      },
+      weightLimit: "Unlimited",
+    },
+  },
 ];
-
 export const karuraRoutersConfig: Omit<RouteConfigs, "from">[] = [
   {
     to: "kusama",
@@ -208,7 +348,7 @@ export const karuraRoutersConfig: Omit<RouteConfigs, "from">[] = [
     },
   },
   {
-    to: "bifrost",
+    to: "bifrostKusama",
     token: "BNC",
     xcm: {
       fee: { token: "BNC", amount: "5120000000" },
@@ -216,7 +356,7 @@ export const karuraRoutersConfig: Omit<RouteConfigs, "from">[] = [
     },
   },
   {
-    to: "bifrost",
+    to: "bifrostKusama",
     token: "KAR",
     xcm: {
       fee: { token: "KAR", amount: "4800000000" },
@@ -224,7 +364,7 @@ export const karuraRoutersConfig: Omit<RouteConfigs, "from">[] = [
     },
   },
   {
-    to: "bifrost",
+    to: "bifrostKusama",
     token: "KUSD",
     xcm: {
       fee: { token: "KUSD", amount: "25600000000" },
@@ -232,7 +372,7 @@ export const karuraRoutersConfig: Omit<RouteConfigs, "from">[] = [
     },
   },
   {
-    to: "bifrost",
+    to: "bifrostKusama",
     token: "VSKSM",
     xcm: {
       fee: { token: "VSKSM", amount: "64000000" },
@@ -588,6 +728,171 @@ export const karuraRoutersConfig: Omit<RouteConfigs, "from">[] = [
     token: "QTZ",
     xcm: { fee: { token: "QTZ", amount: "0" }, weightLimit: ACALA_DEST_WEIGHT },
   },
+  {
+    to: "moonriver",
+    token: "BNC",
+    xcm: {
+      fee: {
+        token: "BNC",
+        amount: "105081753604",
+      },
+      weightLimit: "Unlimited",
+    },
+  },
+  {
+    to: "heiko",
+    token: "KAR",
+    xcm: {
+      fee: {
+        token: "KAR",
+        amount: "74074074074",
+      },
+      weightLimit: "Unlimited",
+    },
+  },
+  {
+    to: "moonriver",
+    token: "KINT",
+    xcm: {
+      fee: {
+        token: "KINT",
+        amount: "9615384615",
+      },
+      weightLimit: "Unlimited",
+    },
+  },
+  {
+    to: "moonriver",
+    token: "HKO",
+    xcm: {
+      fee: {
+        token: "HKO",
+        amount: "150375939849",
+      },
+      weightLimit: "Unlimited",
+    },
+  },
+  {
+    to: "khala",
+    token: "HKO",
+    xcm: {
+      fee: {
+        token: "HKO",
+        amount: "64000000000",
+      },
+      weightLimit: "Unlimited",
+    },
+  },
+  {
+    to: "turing",
+    token: "HKO",
+    xcm: {
+      fee: {
+        token: "HKO",
+        amount: "19200000000",
+      },
+      weightLimit: "Unlimited",
+    },
+  },
+  {
+    to: "moonriver",
+    token: "KSM",
+    xcm: {
+      fee: {
+        token: "KSM",
+        amount: "409165302",
+      },
+      weightLimit: "Unlimited",
+    },
+  },
+  {
+    to: "heiko",
+    token: "KSM",
+    xcm: {
+      fee: {
+        token: "KSM",
+        amount: "486973459",
+      },
+      weightLimit: "Unlimited",
+    },
+  },
+  {
+    to: "kintsugi",
+    token: "KSM",
+    xcm: {
+      fee: {
+        token: "KSM",
+        amount: "161648000",
+      },
+      weightLimit: "Unlimited",
+    },
+  },
+  {
+    to: "bifrostKusama",
+    token: "KSM",
+    xcm: {
+      fee: {
+        token: "KSM",
+        amount: "80824000",
+      },
+      weightLimit: "Unlimited",
+    },
+  },
+  {
+    to: "mangata",
+    token: "KSM",
+    xcm: {
+      fee: {
+        token: "KSM",
+        amount: "527700000",
+      },
+      weightLimit: "Unlimited",
+    },
+  },
+  {
+    to: "basilisk",
+    token: "KSM",
+    xcm: {
+      fee: {
+        token: "KSM",
+        amount: "101577722",
+      },
+      weightLimit: "Unlimited",
+    },
+  },
+  {
+    to: "bifrostKusama",
+    token: "MOVR",
+    xcm: {
+      fee: {
+        token: "MOVR",
+        amount: "215800080000000",
+      },
+      weightLimit: "Unlimited",
+    },
+  },
+  {
+    to: "khala",
+    token: "MOVR",
+    xcm: {
+      fee: {
+        token: "MOVR",
+        amount: "266666666666400",
+      },
+      weightLimit: "Unlimited",
+    },
+  },
+  {
+    to: "heiko",
+    token: "MOVR",
+    xcm: {
+      fee: {
+        token: "MOVR",
+        amount: "1895734597156398",
+      },
+      weightLimit: "Unlimited",
+    },
+  },
 ];
 
 export const acalaTokensConfig: Record<string, BasicToken> = {
@@ -785,74 +1090,44 @@ class BaseAcalaAdapter extends BaseCrossChainAdapter {
 
     const tokenFormSDK = this.wallet?.getToken(token);
     const toChain = chains[to];
-    const destFee = this.getCrossChainFee(token, to);
-    const oldDestWeight = this.getDestWeight(token, to);
-    const useNewDestWeight =
-      this.api.tx.xTokens.transfer.meta.args[3].type.toString() ===
-      "XcmV2WeightLimit";
+
+    const commonParams = {
+      api: this.api,
+      tokenObj: tokenFormSDK?.toChainData() as any,
+      address,
+      amount,
+    };
 
     // to moonriver/moonbeam
     if (
       isChainEqual(toChain, "moonriver") ||
       isChainEqual(toChain, "moonbeam")
     ) {
-      const dst = {
-        parents: 1,
-        interior: {
-          X2: [
-            { Parachain: toChain.paraChainId },
-            { AccountKey20: { key: address, network: "Any" } },
-          ],
-        },
-      };
-
-      return this.api.tx.xTokens.transfer(
-        tokenFormSDK?.toChainData() as any,
-        amount.toChainData(),
-        { V1: dst },
-        (useNewDestWeight ? "Unlimited" : oldDestWeight?.toString()) as any
-      );
+      return transferToEVMChain({
+        ...commonParams,
+        getCrossChainFee: this.getCrossChainFee,
+        token,
+        to,
+      });
     }
-
-    const accountId = this.api?.createType("AccountId32", address).toHex();
-
-    // to other parachains
-    let dst: any = {
-      parents: 1,
-      interior: {
-        X2: [
-          { Parachain: toChain.paraChainId },
-          { AccountId32: { id: accountId, network: "Any" } },
-        ],
-      },
-    };
 
     // to relay-chain
     if (isChainEqual(toChain, "kusama") || isChainEqual(toChain, "polkadot")) {
-      dst = {
-        interior: { X1: { AccountId32: { id: accountId, network: "Any" } } },
-        parents: 1,
-      };
+      return transferToReleayChain({ ...commonParams });
     }
 
-    if (isChainEqual(toChain, "statemine")) {
-      return this.api.tx.xTokens.transferMulticurrencies(
-        [
-          [tokenFormSDK?.toChainData(), amount.toChainData()],
-          [{ Token: destFee.token }, destFee.balance.toChainData()],
-        ],
-        1,
-        { V1: dst },
-        (useNewDestWeight ? "Unlimited" : oldDestWeight?.toString()) as any
-      );
-    } else {
-      return this.api.tx.xTokens.transfer(
-        tokenFormSDK?.toChainData(),
-        amount.toChainData(),
-        { V1: dst },
-        (useNewDestWeight ? "Unlimited" : oldDestWeight?.toString()) as any
-      );
-    }
+    return isChainEqual(toChain, "statemine") ||
+      isChainEqual(toChain, "statemint")
+      ? transferToStatemine({
+          ...commonParams,
+          getCrossChainFee: this.getCrossChainFee,
+          token,
+          to,
+        })
+      : transferToOtherParachains({
+          ...commonParams,
+          to,
+        });
   }
 }
 

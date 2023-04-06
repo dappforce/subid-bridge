@@ -10,103 +10,107 @@ import { BalanceAdapter, BalanceAdapterConfigs } from "../balance-adapter";
 import { BaseCrossChainAdapter } from "../base-chain-adapter";
 import { ChainId, chains } from "../configs";
 import { ApiNotFound, TokenNotFound } from "../errors";
-import { isChainEqual } from "../utils/is-chain-equal";
+import { isChainEqual, getAddress } from "../utils/is-chain-equal";
+import { decodeAddress } from "@polkadot/util-crypto";
 import {
   BalanceData,
   BasicToken,
   RouteConfigs,
   TransferParams,
 } from "../types";
-import {
-  transferNativeToken,
-  transferToRelayChain,
-} from "../utils/transfers/polkadotXcm";
 
-export const ASTAR_ADDRESS_PREFIX = 5;
+const ADDRESS_PREFIX = 56;
 
-export const astarRoutersConfig: Omit<RouteConfigs, "from">[] = [
-  {
-    to: "acala",
-    token: "ASTR",
-    xcm: {
-      fee: { token: "ASTR", amount: "9269600000000000" },
-      weightLimit: "Unlimited",
-    },
-  },
-  {
-    to: "acala",
-    token: "ACA",
-    xcm: {
-      fee: { token: "ACA", amount: "9269600000" },
-      weightLimit: "Unlimited",
-    },
-  },
-  {
-    to: "acala",
-    token: "AUSD",
-    xcm: {
-      fee: { token: "AUSD", amount: "2931921869" },
-      weightLimit: "Unlimited",
-    },
-  },
-  {
-    to: "acala",
-    token: "LDOT",
-    xcm: {
-      fee: { token: "LDOT", amount: "`31449750`" },
-      weightLimit: "Unlimited",
-    },
-  },
+export const pendulumRoutersConfig: Omit<RouteConfigs, "from">[] = [
   {
     to: "polkadot",
     token: "DOT",
     xcm: {
-      fee: { token: "DOT", amount: "4000000" },
+      fee: {
+        token: "DOT",
+        amount: "408646969.884",
+      },
+      weightLimit: "Unlimited",
+    },
+  },
+  {
+    to: "acala",
+    token: "DOT",
+    xcm: {
+      fee: {
+        token: "DOT",
+        amount: "2311673.7936",
+      },
+      weightLimit: "Unlimited",
+    },
+  },
+  {
+    to: "bifrostPolkadot",
+    token: "DOT",
+    xcm: {
+      fee: {
+        token: "DOT",
+        amount: "9269600",
+      },
+      weightLimit: "Unlimited",
+    },
+  },
+  {
+    to: "hydra",
+    token: "DOT",
+    xcm: {
+      fee: {
+        token: "DOT",
+        amount: "12000000",
+      },
+      weightLimit: "Unlimited",
+    },
+  },
+  {
+    to: "interlay",
+    token: "DOT",
+    xcm: {
+      fee: {
+        token: "DOT",
+        amount: "16245354.0536",
+      },
+      weightLimit: "Unlimited",
+    },
+  },
+  {
+    to: "moonbeam",
+    token: "DOT",
+    xcm: {
+      fee: {
+        token: "DOT",
+        amount: "26455026.4544",
+      },
+      weightLimit: "Unlimited",
+    },
+  },
+  {
+    to: "parallel",
+    token: "DOT",
+    xcm: {
+      fee: {
+        token: "DOT",
+        amount: "32226877.215",
+      },
       weightLimit: "Unlimited",
     },
   },
 ];
 
-export const shidenRoutersConfig: Omit<RouteConfigs, "from">[] = [
-  {
-    to: "karura",
-    token: "SDN",
-    xcm: {
-      fee: { token: "SDN", amount: "932400000000000" },
-      weightLimit: "Unlimited",
-    },
-  },
-  {
-    to: "karura",
-    token: "KUSD",
-    xcm: {
-      fee: { token: "KUSD", amount: "3826597686" },
-      weightLimit: "Unlimited",
-    },
-  },
-];
-
-export const astarTokensConfig: Record<string, Record<string, BasicToken>> = {
-  astar: {
-    ASTR: { name: "ASTR", symbol: "ASTR", decimals: 18, ed: "1000000" },
-    ACA: { name: "ACA", symbol: "ACA", decimals: 12, ed: "1" },
-    AUSD: { name: "AUSD", symbol: "AUSD", decimals: 12, ed: "1" },
-    LDOT: { name: "LDOT", symbol: "LDOT", decimals: 10, ed: "1" },
-    DOT: { name: "DOT", symbol: "DOT", decimals: 12 },
-  },
-  shiden: {
-    SDN: { name: "SDN", symbol: "SDN", decimals: 18, ed: "1000000" },
-    KUSD: { name: "KUSD", symbol: "KUSD", decimals: 12, ed: "1" },
+export const pendulumTokensConfig: Record<string, BasicToken> = {
+  DOT: {
+    name: "DOT",
+    symbol: "DOT",
+    decimals: 10,
   },
 };
 
-const SUPPORTED_TOKENS: Record<string, string> = {
-  // to karura
-  KUSD: "18446744073709551616",
-  // to acala
-  ACA: "18446744073709551616",
-  AUSD: "18446744073709551617",
-  LDOT: "18446744073709551618",
+const SUPPORTED_TOKENS: Record<string, number> = {
+  DOT: 0,
 };
 
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
@@ -118,16 +122,16 @@ const createBalanceStorages = (api: AnyApi) => {
         path: "derive.balances.all",
         params: [address],
       }),
-    assets: (tokenId: string, address: string) =>
+    assets: (address: string, tokenId: number) =>
       Storage.create<any>({
         api,
-        path: "query.assets.account",
-        params: [tokenId, address],
+        path: "query.tokens.accounts",
+        params: [address, tokenId],
       }),
   };
 };
 
-class AstarBalanceAdapter extends BalanceAdapter {
+class PendulumBalanceAdapter extends BalanceAdapter {
   private storages: ReturnType<typeof createBalanceStorages>;
 
   constructor({ api, chain, tokens }: BalanceAdapterConfigs) {
@@ -164,10 +168,10 @@ class AstarBalanceAdapter extends BalanceAdapter {
       throw new TokenNotFound(token);
     }
 
-    return this.storages.assets(tokenId, address).observable.pipe(
+    return this.storages.assets(address, tokenId).observable.pipe(
       map((balance) => {
         const amount = FN.fromInner(
-          balance.unwrapOrDefault()?.balance?.toString() || "0",
+          balance.free?.toString() || "0",
           this.getToken(token).decimals
         );
 
@@ -182,20 +186,18 @@ class AstarBalanceAdapter extends BalanceAdapter {
   }
 }
 
-class BaseAstarAdapter extends BaseCrossChainAdapter {
-  private balanceAdapter?: AstarBalanceAdapter;
+class BasePendulumAdapter extends BaseCrossChainAdapter {
+  private balanceAdapter?: PendulumBalanceAdapter;
 
   public async init(api: AnyApi) {
     this.api = api;
 
     await api.isReady;
 
-    const chain = this.chain.id as ChainId;
-
-    this.balanceAdapter = new AstarBalanceAdapter({
-      chain,
+    this.balanceAdapter = new PendulumBalanceAdapter({
+      chain: this.chain.id as ChainId,
       api,
-      tokens: this.tokens,
+      tokens: pendulumTokensConfig,
     });
   }
 
@@ -261,44 +263,51 @@ class BaseAstarAdapter extends BaseCrossChainAdapter {
     const { address, amount, to, token } = params;
     const toChain = chains[to];
 
-    const commonProps = {
-      api: this.api,
-      amount,
-      address,
-    };
-
-    if (token === this.balanceAdapter?.nativeToken) {
-      return transferNativeToken({
-        ...commonProps,
-        toChain,
-      });
-    }
+    const accountId = getAddress(address, ADDRESS_PREFIX);
 
     const tokenId = SUPPORTED_TOKENS[token];
-
-    if (isChainEqual(toChain, "polkadot")) {
-      return transferToRelayChain(commonProps);
-    }
 
     if (tokenId === undefined) {
       throw new TokenNotFound(token);
     }
 
-    return transferNativeToken({
-      ...commonProps,
-      toChain,
-    });
+    let dst: any = {
+      V1: {
+        parents: 1,
+        interior: {
+          X2: [
+            { Parachain: toChain.paraChainId },
+            { AccountId32: { id: decodeAddress(accountId), network: "Any" } },
+          ],
+        },
+      },
+    };
+
+    if (isChainEqual(toChain, "polkadot")) {
+      dst = {
+        V1: {
+          interior: {
+            X1: {
+              AccountId32: { id: decodeAddress(accountId), network: "Any" },
+            },
+          },
+          parents: 1,
+        },
+      };
+    }
+
+    return this.api.tx.xTokens.transfer(
+      { XCM: tokenId },
+      amount.toChainData(),
+      dst,
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      this.getDestWeight(token, to)!.toString()
+    );
   }
 }
 
-export class AstarAdapter extends BaseAstarAdapter {
+export class PendulumAdapter extends BasePendulumAdapter {
   constructor() {
-    super(chains.astar, astarRoutersConfig, astarTokensConfig.astar);
-  }
-}
-
-export class ShidenAdapter extends BaseAstarAdapter {
-  constructor() {
-    super(chains.shiden, shidenRoutersConfig, astarTokensConfig.shiden);
+    super(chains.pendulum, pendulumRoutersConfig, pendulumTokensConfig);
   }
 }

@@ -11,6 +11,13 @@ import { BaseCrossChainAdapter } from "../base-chain-adapter";
 import { ChainId, chains } from "../configs";
 import { ApiNotFound, TokenNotFound } from "../errors";
 import {
+  transferToReleayChain,
+  transferToEVMChain,
+  transferToStatemine,
+  transferToOtherParachains,
+} from "../utils/transfers/xTokensUtils";
+import { isChainEqual } from "../utils/is-chain-equal";
+import {
   BalanceData,
   BasicToken,
   RouteConfigs,
@@ -52,6 +59,83 @@ export const turingRoutersConfig: Omit<RouteConfigs, "from">[] = [
       weightLimit: DEST_WEIGHT,
     },
   },
+  {
+    to: "heiko",
+    token: "HKO",
+    xcm: {
+      fee: {
+        token: "HKO",
+        amount: "291545189504",
+      },
+      weightLimit: "Unlimited",
+    },
+  },
+  {
+    to: "khala",
+    token: "HKO",
+    xcm: {
+      fee: {
+        token: "HKO",
+        amount: "64000000000",
+      },
+      weightLimit: "Unlimited",
+    },
+  },
+  {
+    to: "moonriver",
+    token: "HKO",
+    xcm: {
+      fee: {
+        token: "HKO",
+        amount: "150375939849",
+      },
+      weightLimit: "Unlimited",
+    },
+  },
+  {
+    to: "karura",
+    token: "HKO",
+    xcm: {
+      fee: {
+        token: "HKO",
+        amount: "8082400000",
+      },
+      weightLimit: "Unlimited",
+    },
+  },
+  {
+    to: "bifrostKusama",
+    token: "KAR",
+    xcm: {
+      fee: {
+        token: "KAR",
+        amount: "8082400000",
+      },
+      weightLimit: "Unlimited",
+    },
+  },
+  {
+    to: "moonriver",
+    token: "KAR",
+    xcm: {
+      fee: {
+        token: "KAR",
+        amount: "39651778084",
+      },
+      weightLimit: "Unlimited",
+    },
+  },
+  {
+    to: "heiko",
+    token: "KAR",
+    xcm: {
+      fee: {
+        token: "KAR",
+        amount: "74074074074",
+      },
+      weightLimit: "Unlimited",
+    },
+  },
 ];
 
 export const turingTokensConfig: Record<string, BasicToken> = {
@@ -60,6 +144,11 @@ export const turingTokensConfig: Record<string, BasicToken> = {
   AUSD: { name: "AUSD", symbol: "AUSD", decimals: 12, ed: "10000000000" },
   KUSD: { name: "KUSD", symbol: "KUSD", decimals: 12, ed: "10000000000" },
   LKSM: { name: "LKSM", symbol: "LKSM", decimals: 12, ed: "500000000" },
+  HKO: {
+    name: "HKO",
+    symbol: "HKO",
+    decimals: 12,
+  },
 };
 
 const SUPPORTED_TOKENS: Record<string, string> = {
@@ -67,6 +156,7 @@ const SUPPORTED_TOKENS: Record<string, string> = {
   KAR: "3",
   KUSD: "2",
   LKSM: "4",
+  HKO: "5",
 };
 
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
@@ -219,31 +309,57 @@ class BaseOakAdapter extends BaseCrossChainAdapter {
     const { address, amount, to, token } = params;
     const toChain = chains[to];
 
-    const accountId = this.api?.createType("AccountId32", address).toHex();
-
     const tokenId = SUPPORTED_TOKENS[token];
 
     if (!tokenId && token !== this.balanceAdapter?.nativeToken) {
       throw new TokenNotFound(token);
     }
 
-    return this.api?.tx.xTokens.transfer(
-      token === this.balanceAdapter?.nativeToken ? "0" : tokenId,
-      amount.toChainData(),
-      {
-        V1: {
-          parents: 1,
-          interior: {
-            X2: [
-              { Parachain: toChain.paraChainId },
-              { AccountId32: { id: accountId, network: "Any" } },
-            ],
-          },
-        },
-      },
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      this.getDestWeight(token, to)!.toString()
-    );
+    const commonProps = {
+      api: this.api,
+      amount,
+      address,
+      tokenObj: tokenId,
+    };
+
+    if (isChainEqual(toChain, "polkadot") || isChainEqual(toChain, "kusama")) {
+      return transferToReleayChain({
+        ...commonProps,
+      });
+    }
+
+    if (tokenId === undefined) {
+      throw new TokenNotFound(token);
+    }
+
+    if (
+      isChainEqual(toChain, "moonbeam") ||
+      isChainEqual(toChain, "moonriver")
+    ) {
+      return transferToEVMChain({
+        ...commonProps,
+        token,
+        to,
+        getCrossChainFee: this.getCrossChainFee,
+      });
+    }
+
+    if (
+      isChainEqual(toChain, "statemine") ||
+      isChainEqual(toChain, "statemint")
+    ) {
+      return transferToStatemine({
+        ...commonProps,
+        token,
+        to,
+        getCrossChainFee: this.getCrossChainFee,
+      });
+    }
+
+    return transferToOtherParachains({
+      ...commonProps,
+      to,
+    });
   }
 }
 

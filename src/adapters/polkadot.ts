@@ -10,6 +10,12 @@ import { BalanceAdapter, BalanceAdapterConfigs } from "../balance-adapter";
 import { BaseCrossChainAdapter } from "../base-chain-adapter";
 import { ChainId, chains } from "../configs";
 import { ApiNotFound, TokenNotFound } from "../errors";
+import { isChainEqual } from "../utils/is-chain-equal";
+import {
+  transferToStatemine,
+  transferToEVM,
+  transferToOther,
+} from "../utils/transfers/xcmPalletUtils";
 import {
   BalanceData,
   BasicToken,
@@ -22,6 +28,94 @@ export const polkadotRoutersConfig: Omit<RouteConfigs, "from">[] = [
     to: "acala",
     token: "DOT",
     xcm: { fee: { token: "DOT", amount: "3549633" }, weightLimit: "Unlimited" },
+  },
+  {
+    to: "moonbeam",
+    token: "DOT",
+    xcm: {
+      fee: {
+        token: "DOT",
+        amount: "26455026",
+      },
+      weightLimit: "Unlimited",
+    },
+  },
+  {
+    to: "statemint",
+    token: "DOT",
+    xcm: {
+      fee: {
+        token: "DOT",
+        amount: "15836598",
+      },
+      weightLimit: "Unlimited",
+    },
+  },
+  {
+    to: "parallel",
+    token: "DOT",
+    xcm: {
+      fee: {
+        token: "DOT",
+        amount: "32226877",
+      },
+      weightLimit: "Unlimited",
+    },
+  },
+  {
+    to: "astar",
+    token: "DOT",
+    xcm: {
+      fee: {
+        token: "DOT",
+        amount: "4000000",
+      },
+      weightLimit: "Unlimited",
+    },
+  },
+  {
+    to: "interlay",
+    token: "DOT",
+    xcm: {
+      fee: {
+        token: "DOT",
+        amount: "16245354",
+      },
+      weightLimit: "Unlimited",
+    },
+  },
+  {
+    to: "bifrostPolkadot",
+    token: "DOT",
+    xcm: {
+      fee: {
+        token: "DOT",
+        amount: "8082400",
+      },
+      weightLimit: "Unlimited",
+    },
+  },
+  {
+    to: "hydra",
+    token: "DOT",
+    xcm: {
+      fee: {
+        token: "DOT",
+        amount: "12000000",
+      },
+      weightLimit: "Unlimited",
+    },
+  },
+  {
+    to: "pendulum",
+    token: "DOT",
+    xcm: {
+      fee: {
+        token: "DOT",
+        amount: "480000000",
+      },
+      weightLimit: "Unlimited",
+    },
   },
 ];
 
@@ -39,7 +133,7 @@ export const kusamaRoutersConfig: Omit<RouteConfigs, "from">[] = [
     to: "basilisk",
     token: "KSM",
     xcm: {
-      fee: { token: "KSM", amount: "51618187" },
+      fee: { token: "KSM", amount: "101577722" },
       weightLimit: "Unlimited",
     },
   },
@@ -48,6 +142,61 @@ export const kusamaRoutersConfig: Omit<RouteConfigs, "from">[] = [
     token: "KSM",
     xcm: {
       fee: { token: "KSM", amount: "4000000000" },
+      weightLimit: "Unlimited",
+    },
+  },
+  {
+    to: "moonriver",
+    token: "KSM",
+    xcm: {
+      fee: {
+        token: "KSM",
+        amount: "409165302",
+      },
+      weightLimit: "Unlimited",
+    },
+  },
+  {
+    to: "heiko",
+    token: "KSM",
+    xcm: {
+      fee: {
+        token: "KSM",
+        amount: "486973459",
+      },
+      weightLimit: "Unlimited",
+    },
+  },
+  {
+    to: "kintsugi",
+    token: "KSM",
+    xcm: {
+      fee: {
+        token: "KSM",
+        amount: "161648000",
+      },
+      weightLimit: "Unlimited",
+    },
+  },
+  {
+    to: "bifrostKusama",
+    token: "KSM",
+    xcm: {
+      fee: {
+        token: "KSM",
+        amount: "80824000",
+      },
+      weightLimit: "Unlimited",
+    },
+  },
+  {
+    to: "mangata",
+    token: "KSM",
+    xcm: {
+      fee: {
+        token: "KSM",
+        amount: "527700000",
+      },
       weightLimit: "Unlimited",
     },
   },
@@ -235,67 +384,28 @@ class BasePolkadotAdapter extends BaseCrossChainAdapter {
     }
 
     const isV0V1Support = this.isV0V1;
-    const accountId = this.api?.createType("AccountId32", address).toHex();
+
+    const commonProps = {
+      api: this.api,
+      amount,
+      address,
+      toChain,
+    };
 
     // to statemine
     if (to === "statemine" || to === "statemint") {
-      const dst = {
-        interior: { X1: { ParaChain: toChain.paraChainId } },
-        parents: 0,
-      };
-      const acc = {
-        interior: {
-          X1: {
-            AccountId32: {
-              id: accountId,
-              network: isV0V1Support ? "Any" : undefined,
-            },
-          },
-        },
-        parents: 0,
-      };
-      const ass = [
-        {
-          fun: { Fungible: amount.toChainData() },
-          id: { Concrete: { interior: "Here", parents: 0 } },
-        },
-      ];
-
-      return this.api?.tx.xcmPallet.limitedTeleportAssets(
-        { [isV0V1Support ? "V1" : "V3"]: dst },
-        { [isV0V1Support ? "V1" : "V3"]: acc },
-        { [isV0V1Support ? "V1" : "V3"]: ass },
-        0,
-        "Unlimited"
-      );
+      return transferToStatemine(commonProps);
     }
 
-    // to acala or karura which is support V0/V1 (old version)
-    if ((to === "acala" || to === "karura") && isV0V1Support) {
-      const dst = { X1: { Parachain: toChain.paraChainId } };
-      const acc = { X1: { AccountId32: { id: accountId, network: "Any" } } };
-      const ass = [{ ConcreteFungible: { amount: amount.toChainData() } }];
-
-      return this.api?.tx.xcmPallet.reserveTransferAssets(
-        { V0: dst },
-        { V0: acc },
-        { V0: ass },
-        0
-      );
+    if (
+      isChainEqual(toChain, "moonbeam") ||
+      isChainEqual(toChain, "moonriver")
+    ) {
+      return transferToEVM(commonProps);
     }
 
     if (isV0V1Support) {
-      const dst = { X1: { Parachain: toChain.paraChainId } };
-      const acc = { X1: { AccountId32: { id: accountId, network: "Any" } } };
-      const ass = [{ ConcreteFungible: { amount: amount.toChainData() } }];
-
-      return this.api?.tx.xcmPallet.limitedReserveTransferAssets(
-        { V0: dst },
-        { V0: acc },
-        { V0: ass },
-        0,
-        this.getDestWeight(token, to)?.toString()
-      );
+      return transferToOther(commonProps);
     } else {
       const dst = {
         parents: 0,
@@ -304,7 +414,7 @@ class BasePolkadotAdapter extends BaseCrossChainAdapter {
       const acc = {
         parents: 0,
         interior: {
-          X1: { AccountId32: { id: accountId } },
+          X1: { AccountId32: { id: address } },
         },
       };
       const ass = [

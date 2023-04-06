@@ -9,6 +9,13 @@ import { BalanceAdapter, BalanceAdapterConfigs } from "../balance-adapter";
 import { BaseCrossChainAdapter } from "../base-chain-adapter";
 import { ChainId, chains } from "../configs";
 import { ApiNotFound, TokenNotFound } from "../errors";
+import { isChainEqual } from "../utils/is-chain-equal";
+import {
+  transferToStatemine,
+  transferToOtherParachains,
+  transferToReleayChain,
+  transferToEVMChain,
+} from "../utils/transfers/xTokensUtils";
 import {
   BalanceData,
   BasicToken,
@@ -18,7 +25,7 @@ import {
 
 const DEST_WEIGHT = "Unlimited";
 
-export const bifrostRoutersConfig: Omit<RouteConfigs, "from">[] = [
+export const bifrostKusamaRoutersConfig: Omit<RouteConfigs, "from">[] = [
   {
     to: "karura",
     token: "BNC",
@@ -59,23 +66,315 @@ export const bifrostRoutersConfig: Omit<RouteConfigs, "from">[] = [
       weightLimit: DEST_WEIGHT,
     },
   },
+  {
+    to: "moonriver",
+    token: "MOVR",
+    xcm: {
+      fee: {
+        token: "MOVR",
+        amount: "40000000000000",
+      },
+      weightLimit: "Unlimited",
+    },
+  },
+  {
+    to: "heiko",
+    token: "MOVR",
+    xcm: {
+      fee: {
+        token: "MOVR",
+        amount: "1895734597156398.18",
+      },
+      weightLimit: "Unlimited",
+    },
+  },
+  {
+    to: "karura",
+    token: "MOVR",
+    xcm: {
+      fee: {
+        token: "MOVR",
+        amount: "80824000000000",
+      },
+      weightLimit: "Unlimited",
+    },
+  },
+  {
+    to: "moonriver",
+    token: "BNC",
+    xcm: {
+      fee: {
+        token: "BNC",
+        amount: "105081753604.304",
+      },
+      weightLimit: "Unlimited",
+    },
+  },
+  {
+    to: "kusama",
+    token: "KSM",
+    xcm: {
+      fee: {
+        token: "KSM",
+        amount: "140191500.192",
+      },
+      weightLimit: "Unlimited",
+    },
+  },
+  {
+    to: "kintsugi",
+    token: "KSM",
+    xcm: {
+      fee: {
+        token: "KSM",
+        amount: "161648000",
+      },
+      weightLimit: "Unlimited",
+    },
+  },
+  {
+    to: "moonriver",
+    token: "KSM",
+    xcm: {
+      fee: {
+        token: "KSM",
+        amount: "409165302.7816",
+      },
+      weightLimit: "Unlimited",
+    },
+  },
+  {
+    to: "heiko",
+    token: "KSM",
+    xcm: {
+      fee: {
+        token: "KSM",
+        amount: "486973459.9464",
+      },
+      weightLimit: "Unlimited",
+    },
+  },
+  {
+    to: "mangata",
+    token: "KSM",
+    xcm: {
+      fee: {
+        token: "KSM",
+        amount: "527700000",
+      },
+      weightLimit: "Unlimited",
+    },
+  },
+  {
+    to: "basilisk",
+    token: "KSM",
+    xcm: {
+      fee: {
+        token: "KSM",
+        amount: "101577722.4524",
+      },
+      weightLimit: "Unlimited",
+    },
+  },
+  {
+    to: "moonriver",
+    token: "KAR",
+    xcm: {
+      fee: {
+        token: "KAR",
+        amount: "39651778084.8584",
+      },
+      weightLimit: "Unlimited",
+    },
+  },
+  {
+    to: "heiko",
+    token: "KAR",
+    xcm: {
+      fee: {
+        token: "KAR",
+        amount: "74074074074.0736",
+      },
+      weightLimit: "Unlimited",
+    },
+  },
+  {
+    to: "turing",
+    token: "KAR",
+    xcm: {
+      fee: {
+        token: "KAR",
+        amount: "32000000000",
+      },
+      weightLimit: "Unlimited",
+    },
+  },
 ];
 
-export const bifrostTokensConfig: Record<string, BasicToken> = {
+export const bifrostKusamaTokensConfig: Record<string, BasicToken> = {
   BNC: { name: "BNC", symbol: "BNC", decimals: 12, ed: "10000000000" },
   VSKSM: { name: "VSKSM", symbol: "VSKSM", decimals: 12, ed: "100000000" },
   KSM: { name: "KSM", symbol: "KSM", decimals: 12, ed: "100000000" },
   KAR: { name: "KAR", symbol: "KAR", decimals: 12, ed: "148000000" },
   KUSD: { name: "KUSD", symbol: "KUSD", decimals: 12, ed: "100000000" },
+  MOVR: {
+    name: "MOVR",
+    symbol: "MOVR",
+    decimals: 18,
+  },
 };
 
-const SUPPORTED_TOKENS: Record<string, unknown> = {
-  KUSD: { Stable: "KUSD" },
-  AUSD: { Stable: "AUSD" },
-  BNC: { Native: "BNC" },
-  VSKSM: { VSToken: "KSM" },
-  KSM: { Token: "KSM" },
-  KAR: { Token: "KAR" },
+export const bifrostPolkadotRoutersConfig: Omit<RouteConfigs, "from">[] = [
+  {
+    to: "moonbeam",
+    token: "GLMR",
+    xcm: {
+      fee: {
+        token: "GLMR",
+        amount: "4000000000000000",
+      },
+      weightLimit: "Unlimited",
+    },
+  },
+  {
+    to: "acala",
+    token: "GLMR",
+    xcm: {
+      fee: {
+        token: "GLMR",
+        amount: "8082400000000000",
+      },
+      weightLimit: "Unlimited",
+    },
+  },
+  {
+    to: "parallel",
+    token: "GLMR",
+    xcm: {
+      fee: {
+        token: "GLMR",
+        amount: "44033465433729636",
+      },
+      weightLimit: "Unlimited",
+    },
+  },
+  {
+    to: "polkadot",
+    token: "DOT",
+    xcm: {
+      fee: {
+        token: "DOT",
+        amount: "421434140.38",
+      },
+      weightLimit: "Unlimited",
+    },
+  },
+  {
+    to: "acala",
+    token: "DOT",
+    xcm: {
+      fee: {
+        token: "DOT",
+        amount: "2311673.7936",
+      },
+      weightLimit: "Unlimited",
+    },
+  },
+  {
+    to: "astar",
+    token: "DOT",
+    xcm: {
+      fee: {
+        token: "DOT",
+        amount: "4000000",
+      },
+      weightLimit: "Unlimited",
+    },
+  },
+  {
+    to: "interlay",
+    token: "DOT",
+    xcm: {
+      fee: {
+        token: "DOT",
+        amount: "16245354.0536",
+      },
+      weightLimit: "Unlimited",
+    },
+  },
+  {
+    to: "parallel",
+    token: "DOT",
+    xcm: {
+      fee: {
+        token: "DOT",
+        amount: "32226877.215",
+      },
+      weightLimit: "Unlimited",
+    },
+  },
+  {
+    to: "moonbeam",
+    token: "DOT",
+    xcm: {
+      fee: {
+        token: "DOT",
+        amount: "26455026.4544",
+      },
+      weightLimit: "Unlimited",
+    },
+  },
+  {
+    to: "hydra",
+    token: "DOT",
+    xcm: {
+      fee: {
+        token: "DOT",
+        amount: "12000000",
+      },
+      weightLimit: "Unlimited",
+    },
+  },
+  {
+    to: "pendulum",
+    token: "DOT",
+    xcm: {
+      fee: {
+        token: "DOT",
+        amount: "480000000",
+      },
+      weightLimit: "Unlimited",
+    },
+  },
+];
+
+export const bifrostPolkadotTokensConfig: Record<string, BasicToken> = {
+  GLMR: {
+    name: "GLMR",
+    symbol: "GLMR",
+    decimals: 18,
+  },
+  DOT: {
+    name: "DOT",
+    symbol: "DOT",
+    decimals: 10,
+  },
+};
+
+const SUPPORTED_TOKENS: Record<string, Record<string, unknown>> = {
+  bifrostKusama: {
+    KUSD: { Stable: "KUSD" },
+    AUSD: { Stable: "AUSD" },
+    BNC: { Native: "BNC" },
+    VSKSM: { VSToken: "KSM" },
+    KSM: { Token: "KSM" },
+    KAR: { Token: "KAR" },
+    MOVR: { Token: "MOVR" },
+  },
+  bifrostPolkadot: {
+    GLMRL: { Token: "GLMR" },
+    DOT: { Token: "DOT" },
+  },
 };
 
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
@@ -106,7 +405,8 @@ class BifrostBalanceAdapter extends BalanceAdapter {
 
   public subscribeBalance(
     token: string,
-    address: string
+    address: string,
+    chainId?: ChainId
   ): Observable<BalanceData> {
     const storage = this.storages.balances(address);
 
@@ -124,7 +424,7 @@ class BifrostBalanceAdapter extends BalanceAdapter {
       );
     }
 
-    const tokenId = SUPPORTED_TOKENS[token];
+    const tokenId = SUPPORTED_TOKENS[chainId || "bifrostKusama"][token];
 
     if (tokenId === undefined) {
       throw new TokenNotFound(token);
@@ -159,19 +459,20 @@ class BaseBifrostAdapter extends BaseCrossChainAdapter {
     this.balanceAdapter = new BifrostBalanceAdapter({
       chain: this.chain.id as ChainId,
       api,
-      tokens: bifrostTokensConfig,
+      tokens: bifrostKusamaTokensConfig,
     });
   }
 
   public subscribeTokenBalance(
     token: string,
-    address: string
+    address: string,
+    chainId?: ChainId
   ): Observable<BalanceData> {
     if (!this.balanceAdapter) {
       throw new ApiNotFound(this.chain.id);
     }
 
-    return this.balanceAdapter.subscribeBalance(token, address);
+    return this.balanceAdapter.subscribeBalance(token, address, chainId);
   }
 
   public subscribeMaxInput(
@@ -195,7 +496,7 @@ class BaseBifrostAdapter extends BaseCrossChainAdapter {
             })
           : "0",
       balance: this.balanceAdapter
-        .subscribeBalance(token, address)
+        .subscribeBalance(token, address, this.chain.id)
         .pipe(map((i) => i.available)),
     }).pipe(
       map(({ balance, txFee }) => {
@@ -224,44 +525,74 @@ class BaseBifrostAdapter extends BaseCrossChainAdapter {
 
     const { address, amount, to, token } = params;
     const toChain = chains[to];
+    const chainId = this.chain.id;
 
-    const accountId = this.api?.createType("AccountId32", address).toHex();
+    const tokenId = SUPPORTED_TOKENS[chainId][token];
 
-    const tokenId = SUPPORTED_TOKENS[token];
+    const commonProps = {
+      api: this.api,
+      amount,
+      address,
+      tokenObj: tokenId,
+    };
+
+    if (isChainEqual(toChain, "polkadot") || isChainEqual(toChain, "kusama")) {
+      return transferToReleayChain({
+        ...commonProps,
+      });
+    }
 
     if (tokenId === undefined) {
       throw new TokenNotFound(token);
     }
 
-    const useNewDestWeight =
-      this.api.tx.xTokens.transfer.meta.args[3].type.toString() ===
-      "XcmV2WeightLimit";
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const oldDestWeight = this.getDestWeight(token, to)!.toString();
-    const destWeight = useNewDestWeight ? "Unlimited" : oldDestWeight;
+    if (
+      isChainEqual(toChain, "moonbeam") ||
+      isChainEqual(toChain, "moonriver")
+    ) {
+      return transferToEVMChain({
+        ...commonProps,
+        token,
+        to,
+        getCrossChainFee: this.getCrossChainFee,
+      });
+    }
 
-    return this.api.tx.xTokens.transfer(
-      tokenId,
-      amount.toChainData(),
-      {
-        V1: {
-          parents: 1,
-          interior: {
-            X2: [
-              { Parachain: toChain.paraChainId },
-              { AccountId32: { id: accountId, network: "Any" } },
-            ],
-          },
-        },
-      },
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      destWeight
+    if (
+      isChainEqual(toChain, "statemine") ||
+      isChainEqual(toChain, "statemint")
+    ) {
+      return transferToStatemine({
+        ...commonProps,
+        token,
+        to,
+        getCrossChainFee: this.getCrossChainFee,
+      });
+    }
+
+    return transferToOtherParachains({
+      ...commonProps,
+      to,
+    });
+  }
+}
+
+export class BifrostKusamaAdapter extends BaseBifrostAdapter {
+  constructor() {
+    super(
+      chains.bifrostKusama,
+      bifrostKusamaRoutersConfig,
+      bifrostKusamaTokensConfig
     );
   }
 }
 
-export class BifrostAdapter extends BaseBifrostAdapter {
+export class BifrostPolkadotAdapter extends BaseBifrostAdapter {
   constructor() {
-    super(chains.bifrost, bifrostRoutersConfig, bifrostTokensConfig);
+    super(
+      chains.bifrostPolkadot,
+      bifrostPolkadotRoutersConfig,
+      bifrostKusamaTokensConfig
+    );
   }
 }
