@@ -1,5 +1,5 @@
 {
-  "name": "@subsocial/bridge",
+  "name": "@subsocial/subid-bridge",
   "version": "0.0.1",
   "description": "Subid bridge sdk",
   "main": "index.js",
