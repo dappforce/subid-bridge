@@ -1,6 +1,6 @@
 {
   "name": "@subsocial/subid-bridge",
-  "version": "0.0.1",
+  "version": "0.0.3",
   "description": "Subid bridge sdk",
   "main": "index.js",
   "types": "index.d.ts",
