@@ -1089,6 +1089,8 @@ class BaseAcalaAdapter extends BaseCrossChainAdapter {
     const { address, amount, to, token } = params;
 
     const tokenFormSDK = this.wallet?.getToken(token);
+    const destFee = this.getCrossChainFee(token, to);
+
     const toChain = chains[to];
 
     const commonParams = {
@@ -1105,8 +1107,8 @@ class BaseAcalaAdapter extends BaseCrossChainAdapter {
     ) {
       return xTokensTransferToEVMChain({
         ...commonParams,
-        getCrossChainFee: this.getCrossChainFee,
         token,
+        destFee,
         to,
       });
     }
@@ -1120,8 +1122,7 @@ class BaseAcalaAdapter extends BaseCrossChainAdapter {
       isChainEqual(toChain, "statemint")
       ? xTokensTransferToStatemine({
           ...commonParams,
-          getCrossChainFee: this.getCrossChainFee,
-          token,
+          destFee,
           to,
         })
       : xTokensTransferToOtherChain({

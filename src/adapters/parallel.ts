@@ -726,6 +726,7 @@ class BaseParallelAdapter extends BaseCrossChainAdapter {
     }
 
     const { address, amount, to, token } = params;
+    const destFee = this.getCrossChainFee(token, to);
     const toChain = chains[to];
 
     const tokenId = SUPPORTED_TOKENS[token];
@@ -759,7 +760,7 @@ class BaseParallelAdapter extends BaseCrossChainAdapter {
         ...commonProps,
         token,
         to,
-        getCrossChainFee: this.getCrossChainFee,
+        destFee,
       });
     }
 
@@ -769,9 +770,8 @@ class BaseParallelAdapter extends BaseCrossChainAdapter {
     ) {
       return xTokensTransferToStatemine({
         ...commonProps,
-        token,
         to,
-        getCrossChainFee: this.getCrossChainFee,
+        destFee,
       });
     }
 

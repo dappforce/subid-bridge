@@ -214,6 +214,7 @@ class BaseKicoAdapter extends BaseCrossChainAdapter {
 
     const { address, amount, to, token } = params;
     const toChain = chains[to];
+    const destFee = this.getCrossChainFee(token, to);
 
     const tokenId = SUPPORTED_TOKENS[token];
 
@@ -246,7 +247,7 @@ class BaseKicoAdapter extends BaseCrossChainAdapter {
         ...commonProps,
         token,
         to,
-        getCrossChainFee: this.getCrossChainFee,
+        destFee,
       });
     }
 
@@ -256,9 +257,8 @@ class BaseKicoAdapter extends BaseCrossChainAdapter {
     ) {
       return xTokensTransferToStatemine({
         ...commonProps,
-        token,
         to,
-        getCrossChainFee: this.getCrossChainFee,
+        destFee,
       });
     }
 

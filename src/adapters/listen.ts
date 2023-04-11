@@ -223,6 +223,7 @@ class BaseListenAdapter extends BaseCrossChainAdapter {
     }
 
     const { address, amount, to, token } = params;
+    const destFee = this.getCrossChainFee(token, to);
 
     const tokenId = SUPPORTED_TOKENS[token];
 
@@ -257,7 +258,7 @@ class BaseListenAdapter extends BaseCrossChainAdapter {
         ...commonProps,
         token,
         to,
-        getCrossChainFee: this.getCrossChainFee,
+        destFee,
       });
     }
 
@@ -267,9 +268,8 @@ class BaseListenAdapter extends BaseCrossChainAdapter {
     ) {
       return xTokensTransferToStatemine({
         ...commonProps,
-        token,
         to,
-        getCrossChainFee: this.getCrossChainFee,
+        destFee,
       });
     }
 

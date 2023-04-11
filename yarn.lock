@@ -5476,19 +5476,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@subsocial/definitions@npm:^0.7.8-dev.0":
-  version: 0.7.9
-  resolution: "@subsocial/definitions@npm:0.7.9"
-  dependencies:
-    "@polkadot/api": latest
-    lodash.camelcase: ^4.3.0
-  checksum: f492bcd032b4028f62337f4754fe694f7178c6954029bf0ccb90176877a8af6a34ab0cb9d96eda5a5722359fdae253d9590cc3a9f62b2b01413995dce1a3c5af
-  languageName: node
-  linkType: hard
-
-"@subsocial/subid-bridge@workspace:.":
+"@subsocial/bridge@workspace:.":
   version: 0.0.0-use.local
-  resolution: "@subsocial/subid-bridge@workspace:."
+  resolution: "@subsocial/bridge@workspace:."
   dependencies:
     "@acala-network/api": 4.1.8-7
     "@acala-network/sdk": 4.1.8-7
@@ -5511,6 +5501,16 @@ __metadata:
     "@polkadot/api": ">9"
   languageName: unknown
   linkType: soft
+
+"@subsocial/definitions@npm:^0.7.8-dev.0":
+  version: 0.7.9
+  resolution: "@subsocial/definitions@npm:0.7.9"
+  dependencies:
+    "@polkadot/api": latest
+    lodash.camelcase: ^4.3.0
+  checksum: f492bcd032b4028f62337f4754fe694f7178c6954029bf0ccb90176877a8af6a34ab0cb9d96eda5a5722359fdae253d9590cc3a9f62b2b01413995dce1a3c5af
+  languageName: node
+  linkType: hard
 
 "@substrate/connect-extension-protocol@npm:^1.0.0, @substrate/connect-extension-protocol@npm:^1.0.1":
   version: 1.0.1

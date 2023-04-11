@@ -524,6 +524,7 @@ class BaseBifrostAdapter extends BaseCrossChainAdapter {
     }
 
     const { address, amount, to, token } = params;
+    const destFee = this.getCrossChainFee(token, to);
     const toChain = chains[to];
     const chainId = this.chain.id;
 
@@ -554,7 +555,7 @@ class BaseBifrostAdapter extends BaseCrossChainAdapter {
         ...commonProps,
         token,
         to,
-        getCrossChainFee: this.getCrossChainFee,
+        destFee,
       });
     }
 
@@ -564,9 +565,8 @@ class BaseBifrostAdapter extends BaseCrossChainAdapter {
     ) {
       return xTokensTransferToStatemine({
         ...commonProps,
-        token,
         to,
-        getCrossChainFee: this.getCrossChainFee,
+        destFee,
       });
     }
 

@@ -26,7 +26,7 @@ export const xcmPalletTransferToStatemine = ({
       X1: {
         AccountId32: {
           id: accountId,
-          network: "Any",
+          network: null,
         },
       },
     },
@@ -39,9 +39,9 @@ export const xcmPalletTransferToStatemine = ({
   ];
 
   return api?.tx.xcmPallet.limitedTeleportAssets(
-    { V1: dst },
-    { V1: acc },
-    { V1: ass },
+    { V3: dst },
+    { V3: acc },
+    { V3: ass },
     0,
     "Unlimited"
   );

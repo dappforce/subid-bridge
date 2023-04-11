@@ -471,6 +471,7 @@ class BaseHydradxAdapter extends BaseCrossChainAdapter {
     const { address, amount, to, token: tokenName } = params;
 
     const token = this.getToken<ExpandToken>(tokenName);
+    const destFee = this.getCrossChainFee(tokenName, to);
 
     if (!token) {
       throw new TokenNotFound(token);
@@ -499,7 +500,7 @@ class BaseHydradxAdapter extends BaseCrossChainAdapter {
         ...commonProps,
         token: tokenName,
         to,
-        getCrossChainFee: this.getCrossChainFee,
+        destFee,
       });
     }
 
@@ -509,9 +510,8 @@ class BaseHydradxAdapter extends BaseCrossChainAdapter {
     ) {
       return xTokensTransferToStatemine({
         ...commonProps,
-        token: tokenName,
         to,
-        getCrossChainFee: this.getCrossChainFee,
+        destFee,
       });
     }
 

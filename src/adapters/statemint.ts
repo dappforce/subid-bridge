@@ -319,7 +319,7 @@ class BaseStatemintAdapter extends BaseCrossChainAdapter {
 
       const dst = { interior: "Here", parents: 1 };
       const acc = {
-        interior: { X1: { AccountId32: { id: accountId, network: "Any" } } },
+        interior: { X1: { AccountId32: { id: accountId, network: null } } },
         parents: 0,
       };
       const ass = [
@@ -330,9 +330,9 @@ class BaseStatemintAdapter extends BaseCrossChainAdapter {
       ];
 
       return this.api?.tx.polkadotXcm.limitedTeleportAssets(
-        { V1: dst },
-        { V1: acc },
-        { V1: ass },
+        { V3: dst },
+        { V3: acc },
+        { V3: ass },
         0,
         this.getDestWeight(token, to)?.toString()
       );
@@ -343,12 +343,62 @@ class BaseStatemintAdapter extends BaseCrossChainAdapter {
     // to karura/acala
     const assetId = SUPPORTED_TOKENS[chainId][token];
 
-    if (
-      (to !== "acala" && to !== "karura") ||
-      token === this.balanceAdapter?.nativeToken ||
-      !assetId
-    ) {
+    if (!assetId) {
       throw new TokenNotFound(token);
+    }
+
+    if (to === "acala" || to === "karura") {
+      const dst = {
+        parents: 1,
+        interior: {
+          X1: {
+            Parachain: toChain.paraChainId,
+          },
+        },
+      };
+
+      const acc = {
+        parents: 0,
+        interior: {
+          X1: {
+            AccountId32: {
+              network: null,
+              id: accountId,
+            },
+          },
+        },
+      };
+
+      const ass = [
+        {
+          id: {
+            Concrete: {
+              parents: 0,
+              interior: {
+                X2: [
+                  {
+                    PalletInstance: 50,
+                  },
+                  {
+                    GeneralIndex: assetId,
+                  },
+                ],
+              },
+            },
+          },
+          fun: {
+            Fungible: amount.toChainData(),
+          },
+        },
+      ];
+
+      return this.api.tx.polkadotXcm.limitedReserveTransferAssets(
+        { V3: dst },
+        { V3: acc },
+        { V3: ass },
+        0,
+        "Unlimited"
+      );
     }
 
     const dst = { X2: ["Parent", { Parachain: toChain.paraChainId }] };

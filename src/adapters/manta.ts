@@ -233,6 +233,7 @@ class BaseMantaAdapter extends BaseCrossChainAdapter {
     }
 
     const { address, amount, to, token } = params;
+    const destFee = this.getCrossChainFee(token, to);
     const toChain = chains[to];
 
     const tokenId = SUPPORTED_TOKENS[token];
@@ -266,7 +267,7 @@ class BaseMantaAdapter extends BaseCrossChainAdapter {
         ...commonProps,
         token,
         to,
-        getCrossChainFee: this.getCrossChainFee,
+        destFee,
       });
     }
 
@@ -276,9 +277,8 @@ class BaseMantaAdapter extends BaseCrossChainAdapter {
     ) {
       return xTokensTransferToStatemine({
         ...commonProps,
-        token,
         to,
-        getCrossChainFee: this.getCrossChainFee,
+        destFee,
       });
     }
 

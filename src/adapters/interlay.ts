@@ -447,6 +447,7 @@ class BaseInterlayAdapter extends BaseCrossChainAdapter {
 
     const { address, amount, to, token } = params;
     const toChain = chains[to];
+    const destFee = this.getCrossChainFee(token, to);
 
     const tokenId = SUPPORTED_TOKENS[token];
 
@@ -475,7 +476,7 @@ class BaseInterlayAdapter extends BaseCrossChainAdapter {
         ...commonProps,
         token,
         to,
-        getCrossChainFee: this.getCrossChainFee,
+        destFee,
       });
     }
 
@@ -485,9 +486,8 @@ class BaseInterlayAdapter extends BaseCrossChainAdapter {
     ) {
       return xTokensTransferToStatemine({
         ...commonProps,
-        token,
         to,
-        getCrossChainFee: this.getCrossChainFee,
+        destFee,
       });
     }
 

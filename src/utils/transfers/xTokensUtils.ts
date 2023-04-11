@@ -33,7 +33,7 @@ export const xTokensTransferToReleayChain = ({
 type TransferToEVMProps = TransferProps & {
   token: string;
   to: ChainId;
-  getCrossChainFee: (token: string, to: ChainId) => TokenBalance;
+  destFee: TokenBalance<FixedPointNumber>;
 };
 
 export const xTokensTransferToEVMChain = ({
@@ -41,13 +41,11 @@ export const xTokensTransferToEVMChain = ({
   amount,
   address,
   tokenObj,
-  token,
   to,
-  getCrossChainFee,
+  destFee,
+  token,
 }: TransferToEVMProps) => {
   const toChain = chains[to];
-
-  const destFee = getCrossChainFee(token, to);
 
   const dst = {
     parents: 1,
@@ -115,25 +113,21 @@ export const xTokensTransferToOtherChain = ({
 };
 
 type TransferToStatemineProps = TransferProps & {
-  token: string;
   to: ChainId;
-  getCrossChainFee: (token: string, to: ChainId) => TokenBalance;
+  destFee: TokenBalance<FixedPointNumber>;
 };
 
 export const xTokensTransferToStatemine = ({
   api,
   amount,
   to,
-  token,
   address,
   tokenObj,
-  getCrossChainFee,
+  destFee,
 }: TransferToStatemineProps) => {
   const toChain = chains[to];
 
   const accountId = api.createType("AccountId32", address).toHex();
-
-  const destFee = getCrossChainFee(token, to);
 
   const dst: any = {
     parents: 1,
